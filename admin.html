@@ -320,6 +320,7 @@
                 <button class="tab-btn" onclick="switchTab('addPlayer')">Add Player</button>
                 <button class="tab-btn" onclick="switchTab('addTeam')">Add Team</button>
                 <button class="tab-btn" onclick="switchTab('manageGames')">Add Stats to Existing Game</button>
+                <button class="tab-btn" onclick="switchTab('manageData')">Manage Existing Data</button>
             </div>
 
             <!-- Tab 1: Add Game Stats -->
@@ -615,6 +616,264 @@
 
                         <button type="submit" class="btn">Add Player Stats to Game</button>
                     </form>
+                </div>
+            </div>
+
+            <!-- Tab 5: Manage Existing Data -->
+            <div id="manageDataTab" class="tab-content">
+                <h2>Manage Existing Data</h2>
+                <div id="manageDataSuccessMessage" class="success-message hidden"></div>
+
+                <!-- Games Management Section -->
+                <div class="data-section">
+                    <h3 style="color: #FF6B35; margin-bottom: 1rem;">📊 Games Management</h3>
+                    <div class="form-row" style="margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label for="gamesList">Select Game to Edit/Delete</label>
+                            <select id="gamesList" onchange="loadGameForEditing()">
+                                <option value="">Select a game...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="gameEditForm" class="hidden">
+                        <h4>Edit Game</h4>
+                        <form id="editGameForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editGameWeek">Week</label>
+                                    <input type="number" id="editGameWeek" min="1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editGameDate">Date</label>
+                                    <input type="date" id="editGameDate" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editTeam1">Team 1</label>
+                                    <select id="editTeam1" required>
+                                        <option value="">Select Team</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editTeam1Score">Team 1 Score</label>
+                                    <input type="number" id="editTeam1Score" min="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editTeam2">Team 2</label>
+                                    <select id="editTeam2" required>
+                                        <option value="">Select Team</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editTeam2Score">Team 2 Score</label>
+                                    <input type="number" id="editTeam2Score" min="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <button type="submit" class="btn" style="background: #FF6B35;">Update Game</button>
+                                <button type="button" class="btn" style="background: #dc3545;" onclick="deleteGame()">Delete Game</button>
+                                <button type="button" class="btn" onclick="cancelGameEdit()">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Player Stats Management Section -->
+                <div class="data-section">
+                    <h3 style="color: #FF6B35; margin: 2rem 0 1rem 0;">🏀 Player Stats Management</h3>
+                    <div class="form-row" style="margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label for="playerStatsList">Select Player Stats to Edit/Delete</label>
+                            <select id="playerStatsList" onchange="loadPlayerStatsForEditing()">
+                                <option value="">Select player stats...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="playerStatsEditForm" class="hidden">
+                        <h4>Edit Player Stats</h4>
+                        <form id="editPlayerStatsForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editStatsPlayer">Player</label>
+                                    <select id="editStatsPlayer" required>
+                                        <option value="">Select Player</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editStatsGame">Game</label>
+                                    <select id="editStatsGame" required>
+                                        <option value="">Select Game</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editPoints">Points</label>
+                                    <input type="number" id="editPoints" min="0" value="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editRebounds">Rebounds</label>
+                                    <input type="number" id="editRebounds" min="0" value="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editAssists">Assists</label>
+                                    <input type="number" id="editAssists" min="0" value="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editSteals">Steals</label>
+                                    <input type="number" id="editSteals" min="0" value="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editBlocks">Blocks</label>
+                                    <input type="number" id="editBlocks" min="0" value="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editFgMade">FG Made</label>
+                                    <input type="number" id="editFgMade" min="0" value="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editFgAtt">FG Attempted</label>
+                                    <input type="number" id="editFgAtt" min="0" value="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editTwoMade">2PT Made</label>
+                                    <input type="number" id="editTwoMade" min="0" value="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editTwoAtt">2PT Attempted</label>
+                                    <input type="number" id="editTwoAtt" min="0" value="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editThreeMade">3PT Made</label>
+                                    <input type="number" id="editThreeMade" min="0" value="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editThreeAtt">3PT Attempted</label>
+                                    <input type="number" id="editThreeAtt" min="0" value="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editFtMade">FT Made</label>
+                                    <input type="number" id="editFtMade" min="0" value="0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editFtAtt">FT Attempted</label>
+                                    <input type="number" id="editFtAtt" min="0" value="0" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <button type="submit" class="btn" style="background: #FF6B35;">Update Stats</button>
+                                <button type="button" class="btn" style="background: #dc3545;" onclick="deletePlayerStats()">Delete Stats</button>
+                                <button type="button" class="btn" onclick="cancelPlayerStatsEdit()">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Teams Management Section -->
+                <div class="data-section">
+                    <h3 style="color: #FF6B35; margin: 2rem 0 1rem 0;">🏀 Teams Management</h3>
+                    <div class="form-row" style="margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label for="teamsList">Select Team to Edit/Delete</label>
+                            <select id="teamsList" onchange="loadTeamForEditing()">
+                                <option value="">Select a team...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="teamEditForm" class="hidden">
+                        <h4>Edit Team</h4>
+                        <form id="editTeamForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editTeamName">Team Name</label>
+                                    <input type="text" id="editTeamName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editTeamColor">Team Color</label>
+                                    <input type="color" id="editTeamColor" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editTeamLogo">Logo URL (optional)</label>
+                                <input type="url" id="editTeamLogo" placeholder="https://...">
+                            </div>
+
+                            <div class="form-row">
+                                <button type="submit" class="btn" style="background: #FF6B35;">Update Team</button>
+                                <button type="button" class="btn" style="background: #dc3545;" onclick="deleteTeam()">Delete Team</button>
+                                <button type="button" class="btn" onclick="cancelTeamEdit()">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Players Management Section -->
+                <div class="data-section">
+                    <h3 style="color: #FF6B35; margin: 2rem 0 1rem 0;">🏀 Players Management</h3>
+                    <div class="form-row" style="margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label for="playersList">Select Player to Edit/Delete</label>
+                            <select id="playersList" onchange="loadPlayerForEditing()">
+                                <option value="">Select a player...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="playerEditForm" class="hidden">
+                        <h4>Edit Player</h4>
+                        <form id="editPlayerForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="editPlayerName">Player Name</label>
+                                    <input type="text" id="editPlayerName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editPlayerNumber">Jersey Number</label>
+                                    <input type="number" id="editPlayerNumber" min="0" max="99" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editPlayerTeam">Team</label>
+                                <select id="editPlayerTeam" required>
+                                    <option value="">Select Team</option>
+                                </select>
+                            </div>
+
+                            <div class="form-row">
+                                <button type="submit" class="btn" style="background: #FF6B35;">Update Player</button>
+                                <button type="button" class="btn" style="background: #dc3545;" onclick="deletePlayer()">Delete Player</button>
+                                <button type="button" class="btn" onclick="cancelPlayerEdit()">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>

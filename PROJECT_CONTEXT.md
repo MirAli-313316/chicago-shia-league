@@ -19,7 +19,7 @@ A basketball league statistics website built with Firebase (Firestore + Auth) an
 ```
 chicago-shia-league/
 ├── index.html          # Homepage - shows current week games
-├── admin.html          # Admin dashboard - add games, players, teams
+├── admin.html          # Admin dashboard - add games, players, teams, manage existing data
 ├── players.html        # Player stats page - stats by team
 ├── games.html          # Games by week - view all games organized by week
 ├── js/
@@ -146,7 +146,7 @@ chicago-shia-league/
 ### Critical Issues ✅ RESOLVED
 1. **Homepage not loading Firebase data** - ✅ FIXED: Added Firebase scripts and home.js to index.html
 2. **Admin player stats form resets** - ✅ FIXED: Added "Add Stats to Existing Game" feature
-3. **No way to edit existing games/stats** - Can only add, not update or delete through UI
+3. **No way to edit existing games/stats** - ✅ FIXED: Added complete Edit/Delete functionality
 
 ### Minor Issues
 1. No team standings/win-loss tracking
