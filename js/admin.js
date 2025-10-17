@@ -3,16 +3,19 @@
 let currentGameId = null;
 
 // Check authentication status on page load
-auth.onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(user => {
+    const loginSection = document.getElementById('loginSection');
+    const adminDashboard = document.getElementById('adminDashboard');
+    
     if (user) {
         // User is logged in
-        document.getElementById('loginSection').style.display = 'none';
-        document.getElementById('adminDashboard').style.display = 'block';
+        loginSection.style.display = 'none';
+        adminDashboard.style.display = 'block';
         loadTeams();
     } else {
         // User is not logged in
-        document.getElementById('loginSection').classList.remove('hidden');
-        document.getElementById('adminDashboard').classList.add('hidden');
+        loginSection.style.display = 'block';
+        adminDashboard.style.display = 'none';
     }
 });
 
@@ -25,7 +28,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     const errorMessage = document.getElementById('errorMessage');
     
     try {
-        await auth.signInWithEmailAndPassword(email, password);
+        await firebase.auth().signInWithEmailAndPassword(email, password);
         errorMessage.classList.add('hidden');
     } catch (error) {
         errorMessage.textContent = 'Login failed: ' + error.message;
@@ -35,7 +38,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 
 // Logout function
 function logout() {
-    auth.signOut();
+    firebase.auth().signOut();
 }
 
 // Switch between tabs
