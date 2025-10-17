@@ -47,12 +47,12 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
     });
-    
+
     // Remove active class from all buttons
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    
+
     // Show selected tab
     if (tabName === 'addGame') {
         document.getElementById('addGameTab').classList.add('active');
@@ -63,6 +63,10 @@ function switchTab(tabName) {
     } else if (tabName === 'addTeam') {
         document.getElementById('addTeamTab').classList.add('active');
         document.querySelectorAll('.tab-btn')[2].classList.add('active');
+    } else if (tabName === 'manageGames') {
+        document.getElementById('manageGamesTab').classList.add('active');
+        document.querySelectorAll('.tab-btn')[3].classList.add('active');
+        loadExistingGames(); // Load games when switching to this tab
     }
 }
 
@@ -278,5 +282,179 @@ document.getElementById('addTeamForm').addEventListener('submit', async (e) => {
     } catch (error) {
         console.error('Error adding team:', error);
         alert('Error adding team: ' + error.message);
+    }
+});
+
+// Load existing games for the manage games tab
+async function loadExistingGames() {
+    try {
+        const gamesSnapshot = await db.collection('games')
+            .orderBy('date', 'desc')
+            .get();
+
+        const existingGameSelect = document.getElementById('existingGame');
+        existingGameSelect.innerHTML = '<option value="">Select a game to add stats to...</option>';
+
+        for (const doc of gamesSnapshot.docs) {
+            const game = doc.data();
+
+            // Get team names
+            const team1Doc = await db.collection('teams').doc(game.team1Id).get();
+            const team2Doc = await db.collection('teams').doc(game.team2Id).get();
+
+            const team1Name = team1Doc.exists ? team1Doc.data().name : 'Unknown Team';
+            const team2Name = team2Doc.exists ? team2Doc.data().name : 'Unknown Team';
+
+            // Format date
+            const gameDate = game.date.toDate();
+            const formattedDate = gameDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = `${formattedDate} - ${team1Name} vs ${team2Name} (${game.team1Score}-${game.team2Score})`;
+            existingGameSelect.appendChild(option);
+        }
+
+    } catch (error) {
+        console.error('Error loading existing games:', error);
+        alert('Error loading games: ' + error.message);
+    }
+}
+
+// Handle game selection form
+document.getElementById('selectGameForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const selectedGameId = document.getElementById('existingGame').value;
+    if (!selectedGameId) {
+        alert('Please select a game');
+        return;
+    }
+
+    await loadSelectedGame(selectedGameId);
+});
+
+// Load selected game details and show form
+async function loadSelectedGame(gameId) {
+    try {
+        const gameDoc = await db.collection('games').doc(gameId).get();
+        const game = gameDoc.data();
+
+        if (!gameDoc.exists) {
+            alert('Game not found');
+            return;
+        }
+
+        // Get team names
+        const team1Doc = await db.collection('teams').doc(game.team1Id).get();
+        const team2Doc = await db.collection('teams').doc(game.team2Id).get();
+
+        const team1Name = team1Doc.exists ? team1Doc.data().name : 'Unknown Team';
+        const team2Name = team2Doc.exists ? team2Doc.data().name : 'Unknown Team';
+
+        // Format date
+        const gameDate = game.date.toDate();
+        const formattedDate = gameDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        // Show game info
+        const gameInfoDiv = document.getElementById('existingGameInfo');
+        gameInfoDiv.innerHTML = `
+            <strong>Game Details:</strong><br>
+            Date: ${formattedDate}<br>
+            Teams: ${team1Name} vs ${team2Name}<br>
+            Score: ${game.team1Score} - ${game.team2Score}<br>
+            Week ${game.week}, Season ${game.season}
+        `;
+
+        // Show the stats form section
+        document.getElementById('existingGameStatsSection').classList.remove('hidden');
+
+        // Load players for this game
+        await loadPlayersForExistingGame(game.team1Id, game.team2Id);
+
+    } catch (error) {
+        console.error('Error loading selected game:', error);
+        alert('Error loading game: ' + error.message);
+    }
+}
+
+// Load players for existing game
+async function loadPlayersForExistingGame(team1Id, team2Id) {
+    try {
+        const playersSnapshot = await db.collection('players')
+            .where('teamId', 'in', [team1Id, team2Id])
+            .get();
+
+        const existingStatPlayerSelect = document.getElementById('existingStatPlayer');
+        existingStatPlayerSelect.innerHTML = '<option value="">Select Player</option>';
+
+        playersSnapshot.forEach(doc => {
+            const player = doc.data();
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = `${player.name} (#${player.number})`;
+            existingStatPlayerSelect.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error('Error loading players for existing game:', error);
+    }
+}
+
+// Add stats to existing game form handler
+document.getElementById('addExistingGamePlayerStatsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const selectedGameId = document.getElementById('existingGame').value;
+    if (!selectedGameId) {
+        alert('Please select a game first');
+        return;
+    }
+
+    try {
+        const statData = {
+            gameId: selectedGameId,
+            playerId: document.getElementById('existingStatPlayer').value,
+            points: parseInt(document.getElementById('existingPoints').value),
+            rebounds: parseInt(document.getElementById('existingRebounds').value),
+            assists: parseInt(document.getElementById('existingAssists').value),
+            steals: parseInt(document.getElementById('existingSteals').value),
+            blocks: parseInt(document.getElementById('existingBlocks').value),
+            fgMade: parseInt(document.getElementById('existingFgMade').value),
+            fgAtt: parseInt(document.getElementById('existingFgAtt').value),
+            twoMade: parseInt(document.getElementById('existingTwoMade').value),
+            twoAtt: parseInt(document.getElementById('existingTwoAtt').value),
+            threeMade: parseInt(document.getElementById('existingThreeMade').value),
+            threeAtt: parseInt(document.getElementById('existingThreeAtt').value),
+            ftMade: parseInt(document.getElementById('existingFtMade').value),
+            ftAtt: parseInt(document.getElementById('existingFtAtt').value),
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('gameStats').add(statData);
+
+        const successMessage = document.getElementById('manageGameSuccessMessage');
+        successMessage.textContent = 'Player stats added to game successfully! You can add more players or select a different game.';
+        successMessage.classList.remove('hidden');
+
+        // Reset form but keep game selection
+        document.getElementById('addExistingGamePlayerStatsForm').reset();
+
+        setTimeout(() => {
+            successMessage.classList.add('hidden');
+        }, 4000);
+
+    } catch (error) {
+        console.error('Error adding player stats to existing game:', error);
+        alert('Error adding player stats: ' + error.message);
     }
 });
