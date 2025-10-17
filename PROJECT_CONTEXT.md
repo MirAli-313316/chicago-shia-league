@@ -21,7 +21,7 @@ chicago-shia-league/
 ├── index.html          # Homepage - shows current week games
 ├── admin.html          # Admin dashboard - add games, players, teams
 ├── players.html        # Player stats page - stats by team
-├── games.html          # (NOT YET CREATED) - Games by week
+├── games.html          # Games by week - view all games organized by week
 ├── js/
 │   ├── config.js       # Firebase configuration
 │   ├── home.js         # Homepage logic - loads games from Firestore
@@ -138,22 +138,21 @@ chicago-shia-league/
 - Sortable columns
 - Mobile responsive with horizontal scroll
 
-### Missing Pages
-- **games.html** - View all games by week (not yet created)
+### Current Pages
+- **games.html** - Games by week page with week selector and game history
 
 ## Current Issues
 
-### Critical Issues
-1. **Homepage not loading Firebase data** - Shows static sample data instead of real games from Firestore
-2. **Admin player stats form resets** - When switching tabs after creating a game, the player stats form disappears
+### Critical Issues ✅ RESOLVED
+1. **Homepage not loading Firebase data** - ✅ FIXED: Added Firebase scripts and home.js to index.html
+2. **Admin player stats form resets** - ✅ FIXED: Added "Add Stats to Existing Game" feature
 3. **No way to edit existing games/stats** - Can only add, not update or delete through UI
 
 ### Minor Issues
-1. No "Games by Week" page exists yet
-2. No team standings/win-loss tracking
-3. No individual player detail pages
-4. No search/filter functionality
-5. Static data validation missing (e.g., FG Made can't exceed FG Attempted)
+1. No team standings/win-loss tracking
+2. No individual player detail pages
+3. No search/filter functionality
+4. Static data validation missing (e.g., FG Made can't exceed FG Attempted)
 
 ## Firebase Security Rules (Current)
 ```javascript
