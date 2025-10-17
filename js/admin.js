@@ -1274,3 +1274,56 @@ function cancelPlayerEdit() {
     document.getElementById('playerEditForm').classList.add('hidden');
     document.getElementById('playersList').value = '';
 }
+
+// ===== AUTO-CALCULATION FUNCTIONS =====
+
+// Auto-calculate basketball stats for add game stats form
+function calculateStats() {
+    const twoMade = parseInt(document.getElementById('twoMade').value) || 0;
+    const threeMade = parseInt(document.getElementById('threeMade').value) || 0;
+    const ftMade = parseInt(document.getElementById('ftMade').value) || 0;
+
+    // Auto-calculate FG Made
+    const fgMade = twoMade + threeMade;
+    document.getElementById('fgMade').value = fgMade;
+
+    // Auto-calculate Points
+    const points = (twoMade * 2) + (threeMade * 3) + ftMade;
+    document.getElementById('points').value = points;
+}
+
+// Auto-calculate basketball stats for existing game stats form
+function calculateExistingStats() {
+    const twoMade = parseInt(document.getElementById('existingTwoMade').value) || 0;
+    const threeMade = parseInt(document.getElementById('existingThreeMade').value) || 0;
+    const ftMade = parseInt(document.getElementById('existingFtMade').value) || 0;
+
+    // Auto-calculate FG Made
+    const fgMade = twoMade + threeMade;
+    document.getElementById('existingFgMade').value = fgMade;
+
+    // Auto-calculate Points
+    const points = (twoMade * 2) + (threeMade * 3) + ftMade;
+    document.getElementById('existingPoints').value = points;
+}
+
+// Initialize auto-calculation event listeners when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners for auto-calculation in add game stats form
+    const twoMadeInput = document.getElementById('twoMade');
+    const threeMadeInput = document.getElementById('threeMade');
+    const ftMadeInput = document.getElementById('ftMade');
+
+    if (twoMadeInput) twoMadeInput.addEventListener('input', calculateStats);
+    if (threeMadeInput) threeMadeInput.addEventListener('input', calculateStats);
+    if (ftMadeInput) ftMadeInput.addEventListener('input', calculateStats);
+
+    // Add event listeners for auto-calculation in existing game stats form
+    const existingTwoMadeInput = document.getElementById('existingTwoMade');
+    const existingThreeMadeInput = document.getElementById('existingThreeMade');
+    const existingFtMadeInput = document.getElementById('existingFtMade');
+
+    if (existingTwoMadeInput) existingTwoMadeInput.addEventListener('input', calculateExistingStats);
+    if (existingThreeMadeInput) existingThreeMadeInput.addEventListener('input', calculateExistingStats);
+    if (existingFtMadeInput) existingFtMadeInput.addEventListener('input', calculateExistingStats);
+});

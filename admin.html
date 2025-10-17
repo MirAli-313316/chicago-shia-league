@@ -262,12 +262,60 @@
         }
 
         @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .logo-section {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .league-name {
+                display: none; /* Hide league name on mobile */
+            }
+
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                margin-top: 0;
+                gap: 0.5rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
             .admin-tabs {
                 flex-direction: column;
+                gap: 0.5rem;
             }
-            
+
+            .tab-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+
             .form-row {
                 grid-template-columns: 1fr;
+            }
+
+            /* Fix nav bar boundaries */
+            .nav-container {
+                max-width: 100%;
+            }
+
+            /* Prevent horizontal scroll */
+            body {
+                overflow-x: hidden;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 1rem;
             }
         }
     </style>

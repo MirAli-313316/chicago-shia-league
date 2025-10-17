@@ -185,6 +185,33 @@
         }
 
         @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .logo-section {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .league-name {
+                display: none; /* Hide league name on mobile */
+            }
+
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                margin-top: 0;
+                gap: 0.5rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
             .stats-container {
                 padding: 1rem;
             }
@@ -195,6 +222,21 @@
 
             .page-header h1 {
                 font-size: 1.8rem;
+            }
+
+            /* Fix nav bar boundaries */
+            .nav-container {
+                max-width: 100%;
+            }
+
+            /* Prevent horizontal scroll */
+            body {
+                overflow-x: hidden;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 1rem;
             }
         }
     </style>
@@ -293,47 +335,79 @@
         async function loadPlayerStats(teamId, teamName) {
             const statsContainer = document.getElementById('statsContainer');
             statsContainer.innerHTML = '<div class="loading">Loading player statistics...</div>';
-            
+
             try {
                 // Get all players for this team
                 const playersSnapshot = await db.collection('players')
                     .where('teamId', '==', teamId)
                     .orderBy('number')
                     .get();
-                
+
                 if (playersSnapshot.empty) {
                     statsContainer.innerHTML = '<div class="loading">No players found for this team</div>';
                     return;
                 }
-                
+
                 const playerStats = [];
-                
+
                 // Get stats for each player
                 for (const playerDoc of playersSnapshot.docs) {
                     const player = playerDoc.data();
                     player.id = playerDoc.id;
-                    
-                    // Get all game stats for this player
-                    const statsSnapshot = await db.collection('gameStats')
-                        .where('playerId', '==', player.id)
-                        .get();
-                    
-                    // Calculate totals and averages
-                    const stats = calculatePlayerStats(statsSnapshot);
-                    
-                    playerStats.push({
-                        name: player.name,
-                        number: player.number,
-                        ...stats
-                    });
+
+                    try {
+                        // Get all game stats for this player
+                        const statsSnapshot = await db.collection('gameStats')
+                            .where('playerId', '==', player.id)
+                            .get();
+
+                        // Calculate totals and averages
+                        const stats = calculatePlayerStats(statsSnapshot);
+
+                        playerStats.push({
+                            name: player.name,
+                            number: player.number,
+                            ...stats
+                        });
+                    } catch (playerError) {
+                        console.error(`Error loading stats for player ${player.name}:`, playerError);
+                        // Continue with next player instead of failing completely
+                        playerStats.push({
+                            name: player.name,
+                            number: player.number,
+                            games: 0,
+                            points: 0,
+                            rebounds: 0,
+                            assists: 0,
+                            steals: 0,
+                            blocks: 0,
+                            fgMade: 0,
+                            fgAtt: 0,
+                            twoMade: 0,
+                            twoAtt: 0,
+                            threeMade: 0,
+                            threeAtt: 0,
+                            ftMade: 0,
+                            ftAtt: 0,
+                            fgPct: '0.0',
+                            twoPct: '0.0',
+                            threePct: '0.0',
+                            ftPct: '0.0',
+                            avgPoints: '0.0',
+                            avgRebounds: '0.0',
+                            avgAssists: '0.0',
+                            avgSteals: '0.0',
+                            avgBlocks: '0.0'
+                        });
+                    }
                 }
-                
+
                 // Display the stats table
                 displayStatsTable(teamName, playerStats);
-                
+
             } catch (error) {
                 console.error('Error loading player stats:', error);
-                statsContainer.innerHTML = '<div class="loading">Error loading statistics</div>';
+                statsContainer.innerHTML = `<div class="loading">Error loading statistics: ${error.message}</div>`;
             }
         }
 

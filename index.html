@@ -248,11 +248,27 @@
 
         /* Responsive */
         @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem;
+            }
+
+            .logo-section {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .league-name {
+                display: none; /* Hide league name on mobile */
+            }
+
             .nav-links {
                 display: none;
                 width: 100%;
                 flex-direction: column;
-                margin-top: 1rem;
+                margin-top: 0;
+                gap: 0.5rem;
             }
 
             .nav-links.active {
@@ -261,18 +277,30 @@
 
             .menu-toggle {
                 display: block;
+                order: 1;
             }
 
             .games-grid {
                 grid-template-columns: 1fr;
             }
 
-            .league-name {
-                font-size: 1.2rem;
-            }
-
             .section-header h2 {
                 font-size: 1.5rem;
+            }
+
+            /* Fix nav bar boundaries */
+            .nav-container {
+                max-width: 100%;
+            }
+
+            /* Prevent horizontal scroll */
+            body {
+                overflow-x: hidden;
+            }
+
+            .container {
+                max-width: 100%;
+                padding: 1rem;
             }
         }
     </style>
