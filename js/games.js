@@ -210,7 +210,7 @@ function getTopPlayer(stats, statName) {
 }
 
 // Create HTML for game card with expandable player stats
-async function createGameCard(game, team1, team2, leaders) {
+function createGameCard(game, team1, team2, leaders) {
     const card = document.createElement('div');
     card.className = 'game-card';
 
