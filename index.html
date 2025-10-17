@@ -93,6 +93,122 @@
             background: #FF6B35;
         }
 
+        /* ========== MOBILE NAVIGATION - BULLET PROOF ========== */
+        /* Hide mobile nav on desktop, show on mobile */
+        .mobile-nav {
+            display: none;
+        }
+
+        /* Mobile Navigation Styles */
+        @media (max-width: 768px) {
+            /* Hide desktop navigation completely on mobile */
+            nav {
+                display: none !important;
+            }
+
+            /* Show mobile navigation */
+            .mobile-nav {
+                display: block;
+                background: #000;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            }
+
+            .mobile-nav-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem;
+                max-width: 100%;
+            }
+
+            .mobile-logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .mobile-logo {
+                width: 40px;
+                height: 40px;
+                background: #FF6B35;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                font-size: 1.2rem;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .mobile-logo:hover {
+                background: #ff8c61;
+                transform: scale(1.05);
+            }
+
+            .mobile-league-name {
+                font-size: 1.2rem;
+                font-weight: bold;
+                color: #FF6B35;
+            }
+
+            .mobile-menu-toggle {
+                background: #FF6B35;
+                border: none;
+                color: #fff;
+                font-size: 1.5rem;
+                padding: 0.5rem;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .mobile-menu-toggle:hover {
+                background: #ff8c61;
+            }
+
+            .mobile-nav-links {
+                display: none;
+                background: #000;
+                border-top: 1px solid rgba(255, 107, 53, 0.3);
+                padding: 1rem;
+            }
+
+            .mobile-nav-links.active {
+                display: block;
+            }
+
+            .mobile-nav-links ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .mobile-nav-links li {
+                margin-bottom: 0.5rem;
+            }
+
+            .mobile-nav-links a {
+                color: #fff;
+                text-decoration: none;
+                padding: 0.75rem 1rem;
+                display: block;
+                border-radius: 5px;
+                transition: all 0.3s;
+            }
+
+            .mobile-nav-links a:hover {
+                background: #FF6B35;
+            }
+
+            .mobile-nav-links a.active {
+                background: #FF6B35;
+            }
+        }
+
         /* Hero Section */
         .hero {
             text-align: center;
@@ -348,6 +464,25 @@
         </div>
     </nav>
 
+    <!-- Mobile Navigation (Hidden on Desktop) -->
+    <div class="mobile-nav">
+        <div class="mobile-nav-container">
+            <div class="mobile-logo-section">
+                <div class="mobile-logo" onclick="mobileGoHome()">CSL</div>
+                <div class="mobile-league-name">Chicago Shia League</div>
+            </div>
+            <button class="mobile-menu-toggle" onclick="mobileToggleMenu()">☰</button>
+        </div>
+        <div class="mobile-nav-links" id="mobileNavLinks">
+            <ul>
+                <li><a href="index.html" class="mobile-nav-link active">Home</a></li>
+                <li><a href="games.html" class="mobile-nav-link">Games by Week</a></li>
+                <li><a href="players.html" class="mobile-nav-link">Player Stats</a></li>
+                <li><a href="admin.html" class="mobile-nav-link">Admin 🔒</a></li>
+            </ul>
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <div class="hero">
         <div class="season-badge">⛹️ SEASON 3</div>
@@ -490,16 +625,45 @@
     <script src="js/home.js"></script>
 
     <script>
-        // Mobile menu toggle
+        // Desktop menu toggle (legacy - keep for compatibility)
         function toggleMenu() {
             const navLinks = document.getElementById('navLinks');
-            navLinks.classList.toggle('active');
+            if (navLinks) {
+                navLinks.classList.toggle('active');
+            }
         }
 
-        // Logo home button
+        // Desktop logo home button (legacy - keep for compatibility)
         function goHome() {
             window.location.href = 'index.html';
         }
+
+        // Mobile menu toggle
+        function mobileToggleMenu() {
+            const mobileNavLinks = document.getElementById('mobileNavLinks');
+            if (mobileNavLinks) {
+                mobileNavLinks.classList.toggle('active');
+            }
+        }
+
+        // Mobile logo home button
+        function mobileGoHome() {
+            window.location.href = 'index.html';
+        }
+
+        // Handle mobile navigation active states
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update mobile nav active state based on current page
+            const currentPath = window.location.pathname;
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+            mobileNavLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath.substring(currentPath.lastIndexOf('/'))) {
+                    link.classList.add('active');
+                }
+            });
+        });
     </script>
 </body>
 </html>
