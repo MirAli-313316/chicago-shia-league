@@ -39,6 +39,8 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+            width: 100%;
+            justify-content: space-between;
         }
 
         .logo {
@@ -51,6 +53,13 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logo:hover {
+            background: #ff8c61;
+            transform: scale(1.05);
         }
 
         .league-name {
@@ -266,14 +275,12 @@
         /* Responsive */
         @media (max-width: 768px) {
             .nav-container {
-                flex-direction: column;
-                gap: 1rem;
-                padding: 1rem;
+                position: relative;
             }
 
             .logo-section {
-                width: 100%;
                 justify-content: space-between;
+                align-items: center;
             }
 
             .league-name {
@@ -282,10 +289,17 @@
 
             .nav-links {
                 display: none;
-                width: 100%;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: #000;
                 flex-direction: column;
-                margin-top: 0;
                 gap: 0.5rem;
+                padding: 1rem;
+                border-radius: 0 0 10px 10px;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+                z-index: 99;
             }
 
             .nav-links.active {
@@ -327,10 +341,10 @@
     <nav>
         <div class="nav-container">
             <div class="logo-section">
-                <div class="logo">CSL</div>
+                <div class="logo" onclick="goHome()">CSL</div>
                 <div class="league-name">Chicago Shia League</div>
             </div>
-            <ul class="nav-links">
+            <ul class="nav-links" id="navLinks">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="games.html" class="active">Games by Week</a></li>
                 <li><a href="players.html">Player Stats</a></li>
@@ -369,5 +383,20 @@
 
     <!-- Games Page JavaScript -->
     <script src="js/games.js"></script>
+
+    <script>
+        // Mobile menu toggle
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            if (navLinks) {
+                navLinks.classList.toggle('active');
+            }
+        }
+
+        // Logo home button
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+    </script>
 </body>
 </html>
