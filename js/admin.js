@@ -6,8 +6,8 @@ let currentGameId = null;
 auth.onAuthStateChanged(user => {
     if (user) {
         // User is logged in
-        document.getElementById('loginSection').classList.add('hidden');
-        document.getElementById('adminDashboard').classList.remove('hidden');
+        document.getElementById('loginSection').style.display = 'none';
+        document.getElementById('adminDashboard').style.display = 'block';
         loadTeams();
     } else {
         // User is not logged in
