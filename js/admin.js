@@ -468,15 +468,35 @@ document.getElementById('addExistingGamePlayerStatsForm').addEventListener('subm
 // Load all data for management tab
 async function loadManagementData() {
     try {
+        console.log('Loading management data...');
         await Promise.all([
             loadGamesForManagement(),
             loadPlayerStatsForManagement(),
             loadTeamsForManagement(),
             loadPlayersForManagement()
         ]);
+        console.log('Management data loaded successfully');
     } catch (error) {
         console.error('Error loading management data:', error);
+        showManagementError('Error loading management data. Please check console for details.');
     }
+}
+
+// Show error message in management tab
+function showManagementError(message) {
+    const container = document.getElementById('manageDataTab');
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'error-message';
+    errorDiv.textContent = message;
+    errorDiv.style.marginTop = '1rem';
+
+    // Remove any existing error messages
+    const existingError = container.querySelector('.error-message');
+    if (existingError) {
+        existingError.remove();
+    }
+
+    container.appendChild(errorDiv);
 }
 
 // Load games for management dropdown
@@ -488,6 +508,11 @@ async function loadGamesForManagement() {
 
         const gamesList = document.getElementById('gamesList');
         gamesList.innerHTML = '<option value="">Select a game...</option>';
+
+        if (gamesSnapshot.empty) {
+            gamesList.innerHTML += '<option value="" disabled>No games found - create some games first</option>';
+            return;
+        }
 
         for (const doc of gamesSnapshot.docs) {
             const game = doc.data();
@@ -515,6 +540,8 @@ async function loadGamesForManagement() {
 
     } catch (error) {
         console.error('Error loading games for management:', error);
+        const gamesList = document.getElementById('gamesList');
+        gamesList.innerHTML = '<option value="">Error loading games</option>';
     }
 }
 
@@ -528,6 +555,11 @@ async function loadPlayerStatsForManagement() {
 
         const statsList = document.getElementById('playerStatsList');
         statsList.innerHTML = '<option value="">Select player stats...</option>';
+
+        if (statsSnapshot.empty) {
+            statsList.innerHTML += '<option value="" disabled>No player stats found - add some game stats first</option>';
+            return;
+        }
 
         for (const doc of statsSnapshot.docs) {
             const stat = doc.data();
@@ -556,6 +588,8 @@ async function loadPlayerStatsForManagement() {
 
     } catch (error) {
         console.error('Error loading player stats for management:', error);
+        const statsList = document.getElementById('playerStatsList');
+        statsList.innerHTML = '<option value="">Error loading player stats</option>';
     }
 }
 
@@ -567,6 +601,11 @@ async function loadTeamsForManagement() {
         const teamsList = document.getElementById('teamsList');
         teamsList.innerHTML = '<option value="">Select a team...</option>';
 
+        if (teamsSnapshot.empty) {
+            teamsList.innerHTML += '<option value="" disabled>No teams found - create some teams first</option>';
+            return;
+        }
+
         teamsSnapshot.forEach(doc => {
             const team = doc.data();
             const option = document.createElement('option');
@@ -577,6 +616,8 @@ async function loadTeamsForManagement() {
 
     } catch (error) {
         console.error('Error loading teams for management:', error);
+        const teamsList = document.getElementById('teamsList');
+        teamsList.innerHTML = '<option value="">Error loading teams</option>';
     }
 }
 
@@ -587,6 +628,11 @@ async function loadPlayersForManagement() {
 
         const playersList = document.getElementById('playersList');
         playersList.innerHTML = '<option value="">Select a player...</option>';
+
+        if (playersSnapshot.empty) {
+            playersList.innerHTML += '<option value="" disabled>No players found - create some players first</option>';
+            return;
+        }
 
         for (const doc of playersSnapshot.docs) {
             const player = doc.data();
@@ -603,6 +649,8 @@ async function loadPlayersForManagement() {
 
     } catch (error) {
         console.error('Error loading players for management:', error);
+        const playersList = document.getElementById('playersList');
+        playersList.innerHTML = '<option value="">Error loading players</option>';
     }
 }
 
