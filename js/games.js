@@ -89,8 +89,15 @@ async function loadGamesForWeek() {
     const selectedWeek = parseInt(weekSelect.value);
     const gamesContainer = document.getElementById('gamesContainer');
 
+    console.log('loadGamesForWeek called, gamesContainer:', gamesContainer);
+
     if (!selectedWeek) {
         gamesContainer.innerHTML = '<div class="loading">Select a week to view games</div>';
+        return;
+    }
+
+    if (!gamesContainer) {
+        console.error('gamesContainer element not found!');
         return;
     }
 
@@ -108,6 +115,8 @@ async function loadGamesForWeek() {
             .orderBy('date', 'desc')
             .get();
 
+        console.log('Games snapshot:', gamesSnapshot.size, 'games found');
+
         // Clear loading state
         gamesContainer.innerHTML = '';
 
@@ -121,20 +130,34 @@ async function loadGamesForWeek() {
         for (const gameDoc of gamesSnapshot.docs) {
             const game = gameDoc.data();
             game.id = gameDoc.id;
+            console.log('Processing game:', game.id, game);
 
-            // Get team details
-            const team1Doc = await db.collection('teams').doc(game.team1Id).get();
-            const team2Doc = await db.collection('teams').doc(game.team2Id).get();
+            try {
+                // Get team details
+                const team1Doc = await db.collection('teams').doc(game.team1Id).get();
+                const team2Doc = await db.collection('teams').doc(game.team2Id).get();
 
-            const team1 = team1Doc.data();
-            const team2 = team2Doc.data();
+                const team1 = team1Doc.exists ? team1Doc.data() : null;
+                const team2 = team2Doc.exists ? team2Doc.data() : null;
 
-            // Get game leaders
-            const leaders = await getGameLeaders(game.id);
+                // Get game leaders
+                const leaders = await getGameLeaders(game.id);
 
-            // Create game card
-            const gameCard = createGameCard(game, team1, team2, leaders);
-            gamesContainer.appendChild(gameCard);
+                // Create game card
+                const gameCard = createGameCard(game, team1, team2, leaders);
+
+                // Debug the gameCard
+                console.log('Game card created:', gameCard, typeof gameCard);
+
+                if (gameCard && gameCard.nodeType === Node.ELEMENT_NODE) {
+                    gamesContainer.appendChild(gameCard);
+                } else {
+                    console.error('gameCard is not a valid DOM element:', gameCard);
+                }
+            } catch (gameError) {
+                console.error('Error processing individual game:', gameError);
+                // Continue with next game instead of failing completely
+            }
         }
 
     } catch (error) {
@@ -232,12 +255,12 @@ function createGameCard(game, team1, team2, leaders) {
         </div>
         <div class="matchup">
             <div class="team">
-                <div class="team-name">${team1 ? team1.name : 'Unknown Team'}</div>
+                <div class="team-name">${team1 && team1.name ? team1.name : 'Unknown Team'}</div>
                 <div class="score">${game.team1Score}</div>
             </div>
             <div class="vs">VS</div>
             <div class="team">
-                <div class="team-name">${team2 ? team2.name : 'Unknown Team'}</div>
+                <div class="team-name">${team2 && team2.name ? team2.name : 'Unknown Team'}</div>
                 <div class="score">${game.team2Score}</div>
             </div>
         </div>
