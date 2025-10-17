@@ -87,6 +87,23 @@
             background: #FF6B35;
         }
 
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            background: #FF6B35;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .menu-toggle:hover {
+            background: #ff8c61;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -341,6 +358,7 @@
             <div class="logo-section">
                 <div class="logo" onclick="goHome()">CSL</div>
                 <div class="league-name">Chicago Shia League</div>
+                <button class="menu-toggle" onclick="toggleMenu()">☰</button>
             </div>
             <ul class="nav-links" id="navLinks">
                 <li><a href="index.html">Home</a></li>
