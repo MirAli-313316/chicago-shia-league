@@ -43,6 +43,8 @@ function logout() {
 
 // Switch between tabs
 function switchTab(tabName) {
+    console.log('Switching to tab:', tabName);
+
     // Hide all tabs
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.remove('active');
@@ -68,9 +70,19 @@ function switchTab(tabName) {
         document.querySelectorAll('.tab-btn')[3].classList.add('active');
         loadExistingGames(); // Load games when switching to this tab
     } else if (tabName === 'manageData') {
-        document.getElementById('manageDataTab').classList.add('active');
-        document.querySelectorAll('.tab-btn')[4].classList.add('active');
-        loadManagementData(); // Load data when switching to this tab
+        console.log('Activating manageData tab');
+        const manageDataTab = document.getElementById('manageDataTab');
+        if (manageDataTab) {
+            console.log('manageDataTab element found, current classes:', manageDataTab.className);
+            manageDataTab.classList.add('active');
+            document.querySelectorAll('.tab-btn')[4].classList.add('active');
+            console.log('Tab activated, new classes:', manageDataTab.className);
+            console.log('Tab visible?', manageDataTab.style.display !== 'none' && getComputedStyle(manageDataTab).display !== 'none');
+            console.log('Tab calling loadManagementData()');
+            loadManagementData(); // Load data when switching to this tab
+        } else {
+            console.error('manageDataTab element not found!');
+        }
     }
 }
 
@@ -469,6 +481,15 @@ document.getElementById('addExistingGamePlayerStatsForm').addEventListener('subm
 async function loadManagementData() {
     try {
         console.log('Loading management data...');
+        console.log('Current user authenticated:', !!firebase.auth().currentUser);
+
+        // Check if elements exist
+        const elements = ['gamesList', 'playerStatsList', 'teamsList', 'playersList'];
+        elements.forEach(id => {
+            const element = document.getElementById(id);
+            console.log(`${id} element found:`, !!element);
+        });
+
         await Promise.all([
             loadGamesForManagement(),
             loadPlayerStatsForManagement(),
@@ -502,20 +523,32 @@ function showManagementError(message) {
 // Load games for management dropdown
 async function loadGamesForManagement() {
     try {
+        console.log('Loading games for management...');
         const gamesSnapshot = await db.collection('games')
             .orderBy('date', 'desc')
             .get();
 
+        console.log('Games snapshot size:', gamesSnapshot.size);
+        console.log('Games snapshot empty:', gamesSnapshot.empty);
+
         const gamesList = document.getElementById('gamesList');
+        if (!gamesList) {
+            console.error('gamesList element not found!');
+            return;
+        }
+
         gamesList.innerHTML = '<option value="">Select a game...</option>';
 
         if (gamesSnapshot.empty) {
+            console.log('No games found in database');
             gamesList.innerHTML += '<option value="" disabled>No games found - create some games first</option>';
             return;
         }
 
+        console.log('Processing', gamesSnapshot.docs.length, 'games');
         for (const doc of gamesSnapshot.docs) {
             const game = doc.data();
+            console.log('Processing game:', game);
 
             // Get team names
             const team1Doc = await db.collection('teams').doc(game.team1Id).get();
@@ -537,32 +570,47 @@ async function loadGamesForManagement() {
             option.textContent = `${formattedDate} - ${team1Name} vs ${team2Name} (${game.team1Score}-${game.team2Score}) - Week ${game.week}`;
             gamesList.appendChild(option);
         }
+        console.log('Games loaded successfully');
 
     } catch (error) {
         console.error('Error loading games for management:', error);
         const gamesList = document.getElementById('gamesList');
-        gamesList.innerHTML = '<option value="">Error loading games</option>';
+        if (gamesList) {
+            gamesList.innerHTML = '<option value="">Error loading games</option>';
+        }
     }
 }
 
 // Load player stats for management dropdown
 async function loadPlayerStatsForManagement() {
     try {
+        console.log('Loading player stats for management...');
         const statsSnapshot = await db.collection('gameStats')
             .orderBy('createdAt', 'desc')
             .limit(100)
             .get();
 
+        console.log('Stats snapshot size:', statsSnapshot.size);
+        console.log('Stats snapshot empty:', statsSnapshot.empty);
+
         const statsList = document.getElementById('playerStatsList');
+        if (!statsList) {
+            console.error('playerStatsList element not found!');
+            return;
+        }
+
         statsList.innerHTML = '<option value="">Select player stats...</option>';
 
         if (statsSnapshot.empty) {
+            console.log('No player stats found in database');
             statsList.innerHTML += '<option value="" disabled>No player stats found - add some game stats first</option>';
             return;
         }
 
+        console.log('Processing', statsSnapshot.docs.length, 'player stats');
         for (const doc of statsSnapshot.docs) {
             const stat = doc.data();
+            console.log('Processing stat:', stat);
 
             // Get player name
             const playerDoc = await db.collection('players').doc(stat.playerId).get();
@@ -585,11 +633,14 @@ async function loadPlayerStatsForManagement() {
             option.textContent = `${playerName} - ${stat.points} pts, ${stat.rebounds} reb - ${gameInfo}`;
             statsList.appendChild(option);
         }
+        console.log('Player stats loaded successfully');
 
     } catch (error) {
         console.error('Error loading player stats for management:', error);
         const statsList = document.getElementById('playerStatsList');
-        statsList.innerHTML = '<option value="">Error loading player stats</option>';
+        if (statsList) {
+            statsList.innerHTML = '<option value="">Error loading player stats</option>';
+        }
     }
 }
 
