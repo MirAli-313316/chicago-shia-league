@@ -209,8 +209,8 @@ function getTopPlayer(stats, statName) {
     };
 }
 
-// Create HTML for game card - same as home.js
-function createGameCard(game, team1, team2, leaders) {
+// Create HTML for game card with expandable player stats
+async function createGameCard(game, team1, team2, leaders) {
     const card = document.createElement('div');
     card.className = 'game-card';
 
@@ -223,9 +223,12 @@ function createGameCard(game, team1, team2, leaders) {
     });
 
     card.innerHTML = `
-        <div class="game-header">
-            <span class="game-date">${formattedDate}</span>
-            <span style="color: #888;">Week ${game.week}</span>
+        <div class="game-card-actions">
+            <div>
+                <span class="game-date">${formattedDate}</span>
+                <span style="color: #888; margin-left: 1rem;">Week ${game.week}</span>
+            </div>
+            <button class="view-stats-btn" onclick="toggleGamePlayerStats('${game.id}', this)">View Player Stats</button>
         </div>
         <div class="matchup">
             <div class="team">
@@ -257,7 +260,70 @@ function createGameCard(game, team1, team2, leaders) {
                 <span class="player-stat">${leaders.steals.playerName} - ${leaders.steals.value} stl</span>
             </div>
         </div>
+        <div class="game-player-stats" id="game-stats-${game.id}">
+            <h5>Loading player statistics...</h5>
+        </div>
     `;
 
     return card;
+}
+
+// Toggle player stats for a specific game
+async function toggleGamePlayerStats(gameId, button) {
+    const statsContainer = document.getElementById(`game-stats-${gameId}`);
+    const gameCard = button.closest('.game-card');
+
+    if (statsContainer.classList.contains('show')) {
+        // Hide stats
+        statsContainer.classList.remove('show');
+        button.textContent = 'View Player Stats';
+    } else {
+        // Show stats (load if not already loaded)
+        if (statsContainer.querySelector('h5').textContent === 'Loading player statistics...') {
+            await loadGamePlayerStats(gameId, statsContainer);
+        }
+        statsContainer.classList.add('show');
+        button.textContent = 'Hide Player Stats';
+    }
+}
+
+// Load and display player stats for a specific game
+async function loadGamePlayerStats(gameId, container) {
+    try {
+        // Get all player stats for this game
+        const statsSnapshot = await db.collection('gameStats')
+            .where('gameId', '==', gameId)
+            .get();
+
+        if (statsSnapshot.empty) {
+            container.innerHTML = '<h5>No player statistics recorded for this game</h5>';
+            return;
+        }
+
+        let statsHtml = '<h5>Player Statistics</h5>';
+
+        for (const statDoc of statsSnapshot.docs) {
+            const stat = statDoc.data();
+
+            // Get player name
+            const playerDoc = await db.collection('players').doc(stat.playerId).get();
+            const playerName = playerDoc.exists ? playerDoc.data().name : 'Unknown Player';
+
+            // Format stats summary
+            const statsSummary = `${stat.points} pts, ${stat.rebounds} reb, ${stat.assists} ast`;
+
+            statsHtml += `
+                <div class="player-stat-item">
+                    <span class="player-name">${playerName}</span>
+                    <span class="player-stats-summary">${statsSummary}</span>
+                </div>
+            `;
+        }
+
+        container.innerHTML = statsHtml;
+
+    } catch (error) {
+        console.error('Error loading game player stats:', error);
+        container.innerHTML = '<h5>Error loading player statistics</h5>';
+    }
 }

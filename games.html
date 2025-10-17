@@ -288,12 +288,71 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 107, 53, 0.3);
             transition: all 0.3s;
+            margin-bottom: 2rem;
         }
 
         .game-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
             border-color: #FF6B35;
+        }
+
+        .game-card-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .view-stats-btn {
+            background: #FF6B35;
+            color: #fff;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .view-stats-btn:hover {
+            background: #ff8c61;
+        }
+
+        .game-player-stats {
+            display: none;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .game-player-stats.show {
+            display: block;
+        }
+
+        .game-player-stats h5 {
+            color: #FF6B35;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .player-stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 3px;
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .player-stats-summary {
+            text-align: right;
+            font-size: 0.9rem;
         }
 
         .game-header {
