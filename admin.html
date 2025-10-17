@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Chicago Shia League</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* Navigation - Same as homepage */
+        nav {
+            background: #000;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: #FF6B35;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .league-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: #FF6B35;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Login Section */
+        .login-section {
+            max-width: 400px;
+            margin: 4rem auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .login-section h2 {
+            color: #FF6B35;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #FF6B35;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #FF6B35;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: #FF6B35;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #ff8c61;
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+
+        .success-message {
+            background: rgba(0, 255, 0, 0.2);
+            color: #6bff6b;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+
+        /* Admin Dashboard */
+        .admin-dashboard {
+            display: none;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #FF6B35;
+        }
+
+        .admin-header h1 {
+            color: #FF6B35;
+        }
+
+        .logout-btn {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 0, 0, 0.3);
+            color: #fff;
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 0, 0, 0.5);
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255, 107, 53, 0.2);
+        }
+
+        .tab-btn.active {
+            background: #FF6B35;
+            border-color: #FF6B35;
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content h2 {
+            color: #FF6B35;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 768px) {
+            .admin-tabs {
+                flex-direction: column;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo-section">
+                <div class="logo">CSL</div>
+                <div class="league-name">Chicago Shia League</div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="games.html">Games by Week</a></li>
+                <li><a href="players.html">Player Stats</a></li>
+                <li><a href="admin.html" class="active">Admin 🔒</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Login Section -->
+        <div id="loginSection" class="login-section">
+            <h2>🔒 Admin Login</h2>
+            <div id="errorMessage" class="error-message hidden"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+
+        <!-- Admin Dashboard (Hidden until logged in) -->
+        <div id="adminDashboard" class="admin-dashboard">
+            <div class="admin-header">
+                <h1>⚙️ Admin Dashboard</h1>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+
+            <!-- Tabs -->
+            <div class="admin-tabs">
+                <button class="tab-btn active" onclick="switchTab('addGame')">Add Game Stats</button>
+                <button class="tab-btn" onclick="switchTab('addPlayer')">Add Player</button>
+                <button class="tab-btn" onclick="switchTab('addTeam')">Add Team</button>
+            </div>
+
+            <!-- Tab 1: Add Game Stats -->
+            <div id="addGameTab" class="tab-content active">
+                <h2>Add Game Statistics</h2>
+                <div id="gameSuccessMessage" class="success-message hidden"></div>
+                
+                <form id="addGameForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gameWeek">Week</label>
+                            <input type="number" id="gameWeek" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="gameDate">Date</label>
+                            <input type="date" id="gameDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="team1">Team 1</label>
+                            <select id="team1" required>
+                                <option value="">Select Team</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="team1Score">Team 1 Score</label>
+                            <input type="number" id="team1Score" min="0" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="team2">Team 2</label>
+                            <select id="team2" required>
+                                <option value="">Select Team</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="team2Score">Team 2 Score</label>
+                            <input type="number" id="team2Score" min="0" required>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn">Create Game</button>
+                </form>
+
+                <div id="playerStatsSection" class="hidden" style="margin-top: 2rem;">
+                    <h3 style="color: #FF6B35; margin-bottom: 1rem;">Add Player Stats for This Game</h3>
+                    <form id="addPlayerStatsForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="statPlayer">Player</label>
+                                <select id="statPlayer" required>
+                                    <option value="">Select Player</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="points">Points</label>
+                                <input type="number" id="points" min="0" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="rebounds">Rebounds</label>
+                                <input type="number" id="rebounds" min="0" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="assists">Assists</label>
+                                <input type="number" id="assists" min="0" value="0" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="steals">Steals</label>
+                                <input type="number" id="steals" min="0" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="blocks">Blocks</label>
+                                <input type="number" id="blocks" min="0" value="0" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fgMade">FG Made</label>
+                                <input type="number" id="fgMade" min="0" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="fgAtt">FG Attempted</label>
+                                <input type="number" id="fgAtt" min="0" value="0" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="twoMade">2PT Made</label>
+                                <input type="number" id="twoMade" min="0" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="twoAtt">2PT Attempted</label>
+                                <input type="number" id="twoAtt" min="0" value="0" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="threeMade">3PT Made</label>
+                                <input type="number" id="threeMade" min="0" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="threeAtt">3PT Attempted</label>
+                                <input type="number" id="threeAtt" min="0" value="0" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="ftMade">FT Made</label>
+                                <input type="number" id="ftMade" min="0" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ftAtt">FT Attempted</label>
+                                <input type="number" id="ftAtt" min="0" value="0" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn">Add Player Stats</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tab 2: Add Player -->
+            <div id="addPlayerTab" class="tab-content">
+                <h2>Add New Player</h2>
+                <div id="playerSuccessMessage" class="success-message hidden"></div>
+                
+                <form id="addPlayerForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="playerName">Player Name</label>
+                            <input type="text" id="playerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="playerNumber">Jersey Number</label>
+                            <input type="number" id="playerNumber" min="0" max="99" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="playerTeam">Team</label>
+                        <select id="playerTeam" required>
+                            <option value="">Select Team</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn">Add Player</button>
+                </form>
+            </div>
+
+            <!-- Tab 3: Add Team -->
+            <div id="addTeamTab" class="tab-content">
+                <h2>Add New Team</h2>
+                <div id="teamSuccessMessage" class="success-message hidden"></div>
+                
+                <form id="addTeamForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="teamName">Team Name</label>
+                            <input type="text" id="teamName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="teamColor">Team Color (Hex)</label>
+                            <input type="color" id="teamColor" value="#FF6B35" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="teamLogo">Logo URL (optional)</label>
+                        <input type="url" id="teamLogo" placeholder="https://...">
+                    </div>
+
+                    <button type="submit" class="btn">Add Team</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- Config (you'll create this) -->
+    <script src="js/config.js"></script>
+    
+    <!-- Admin JavaScript -->
+    <script src="js/admin.js"></script>
+</body>
+</html>

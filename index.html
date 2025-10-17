@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicago Shia League - Season 3</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* Navigation */
+        nav {
+            background: #000;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: #FF6B35;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .league-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: #FF6B35;
+            transform: translateY(-2px);
+        }
+
+        .nav-links a.active {
+            background: #FF6B35;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, #FF6B35 0%, #ff8c61 100%);
+        }
+
+        .season-badge {
+            display: inline-block;
+            background: #000;
+            color: #FF6B35;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+        }
+
+        .week-info {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Section Headers */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #FF6B35;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            color: #FF6B35;
+        }
+
+        /* Game Cards */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            transition: all 0.3s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.3);
+            border-color: #FF6B35;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .game-date {
+            color: #FF6B35;
+            font-weight: bold;
+        }
+
+        .matchup {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+
+        .team {
+            text-align: center;
+            flex: 1;
+        }
+
+        .team-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .vs {
+            font-size: 1.5rem;
+            color: #888;
+            padding: 0 1rem;
+        }
+
+        .game-leaders {
+            margin-top: 1.5rem;
+        }
+
+        .game-leaders h4 {
+            color: #FF6B35;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .leader-stat {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 5px;
+        }
+
+        .stat-category {
+            color: #FF6B35;
+            font-weight: bold;
+        }
+
+        .player-stat {
+            text-align: right;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        /* Mobile Menu Toggle */
+        .menu-toggle {
+            display: none;
+            background: #FF6B35;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                margin-top: 1rem;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .league-name {
+                font-size: 1.2rem;
+            }
+
+            .section-header h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo-section">
+                <div class="logo">CSL</div>
+                <div class="league-name">Chicago Shia League</div>
+            </div>
+            <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="games.html">Games by Week</a></li>
+                <li><a href="players.html">Player Stats</a></li>
+                <li><a href="admin.html">Admin 🔒</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="season-badge">⛹️ SEASON 3</div>
+        <div class="week-info">Currently Week 1</div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Latest Games Section -->
+        <div class="section-header">
+            <h2>🏀 This Week's Games</h2>
+        </div>
+
+        <div class="games-grid" id="gamesContainer">
+            <!-- Game Card 1 -->
+            <div class="game-card">
+                <div class="game-header">
+                    <span class="game-date">October 15, 2025</span>
+                    <span style="color: #888;">Game 1</span>
+                </div>
+                <div class="matchup">
+                    <div class="team">
+                        <div class="team-name">Bulls</div>
+                        <div class="score">85</div>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="team">
+                        <div class="team-name">Lakers</div>
+                        <div class="score">72</div>
+                    </div>
+                </div>
+                <div class="game-leaders">
+                    <h4>Game Leaders</h4>
+                    <div class="leader-stat">
+                        <span class="stat-category">Points:</span>
+                        <span class="player-stat">John Smith - 24 pts</span>
+                    </div>
+                    <div class="leader-stat">
+                        <span class="stat-category">Rebounds:</span>
+                        <span class="player-stat">Mike Jones - 12 reb</span>
+                    </div>
+                    <div class="leader-stat">
+                        <span class="stat-category">Blocks:</span>
+                        <span class="player-stat">Tom Brown - 4 blk</span>
+                    </div>
+                    <div class="leader-stat">
+                        <span class="stat-category">Steals:</span>
+                        <span class="player-stat">Jake Wilson - 5 stl</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Card 2 -->
+            <div class="game-card">
+                <div class="game-header">
+                    <span class="game-date">October 15, 2025</span>
+                    <span style="color: #888;">Game 2</span>
+                </div>
+                <div class="matchup">
+                    <div class="team">
+                        <div class="team-name">Warriors</div>
+                        <div class="score">92</div>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="team">
+                        <div class="team-name">Celtics</div>
+                        <div class="score">88</div>
+                    </div>
+                </div>
+                <div class="game-leaders">
+                    <h4>Game Leaders</h4>
+                    <div class="leader-stat">
+                        <span class="stat-category">Points:</span>
+                        <span class="player-stat">David Lee - 28 pts</span>
+                    </div>
+                    <div class="leader-stat">
+                        <span class="stat-category">Rebounds:</span>
+                        <span class="player-stat">Chris Green - 10 reb</span>
+                    </div>
+                    <div class="leader-stat">
+                        <span class="stat-category">Blocks:</span>
+                        <span class="player-stat">Paul White - 3 blk</span>
+                    </div>
+                    <div class="leader-stat">
+                        <span class="stat-category">Steals:</span>
+                        <span class="player-stat">Steve Clark - 4 stl</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Card 3 -->
+            <div class="game-card">
+                <div class="game-header">
+                    <span class="game-date">October 16, 2025</span>
+                    <span style="color: #888;">Game 3</span>
+                </div>
+                <div class="matchup">
+                    <div class="team">
+                        <div class="team-name">Heat</div>
+                        <div class="score">78</div>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="team">
+                        <div class="team-name">Nets</div>
+                        <div class="score">81</div>
+                    </div>
+                </div>
+                <div class="game-leaders">
+                    <h4>Game Leaders</h4>
+                    <div class="leader-stat">
+                        <span class="stat-category">Points:</span>
+                        <span class="player-stat">Kevin Moore - 22 pts</span>
+                    </div>
+                    <div class="leader-stat">
+                        <span class="stat-category">Rebounds:</span>
+                        <span class="player-stat">Ryan Hall - 11 reb</span>
+                    </div>
+                    <div class="leader-stat">
+                        <span class="stat-category">Blocks:</span>
+                        <span class="player-stat">Alex Davis - 2 blk</span>
+                    </div>
+                    <div class="leader-stat">
+                        <span class="stat-category">Steals:</span>
+                        <span class="player-stat">Ben Taylor - 6 stl</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mobile menu toggle
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        // This is where you'll add Firebase integration
+        // For now, showing static data
+        console.log('Homepage loaded with static data');
+        console.log('Next step: Connect to Firebase to load real game data');
+    </script>
+</body>
+</html>

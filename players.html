@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Stats - Chicago Shia League</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        nav {
+            background: #000;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: #FF6B35;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        .league-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .nav-links a:hover {
+            background: #FF6B35;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #FF6B35;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #FF6B35;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .team-tab {
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .team-tab:hover {
+            background: rgba(255, 107, 53, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .team-tab.active {
+            background: #FF6B35;
+            border-color: #FF6B35;
+        }
+
+        .stats-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            overflow-x: auto;
+        }
+
+        .team-name-header {
+            font-size: 2rem;
+            color: #FF6B35;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1200px;
+        }
+
+        .stats-table th {
+            background: rgba(255, 107, 53, 0.3);
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+            color: #FF6B35;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .stats-table td {
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-table tbody tr:hover {
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .player-name {
+            font-weight: bold;
+            color: #FF6B35;
+            text-align: left !important;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        .percentage {
+            color: #6bff6b;
+        }
+
+        @media (max-width: 768px) {
+            .stats-container {
+                padding: 1rem;
+            }
+
+            .team-tabs {
+                flex-direction: column;
+            }
+
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="logo-section">
+                <div class="logo">CSL</div>
+                <div class="league-name">Chicago Shia League</div>
+            </div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="games.html">Games by Week</a></li>
+                <li><a href="players.html" style="background: #FF6B35;">Player Stats</a></li>
+                <li><a href="admin.html">Admin 🔒</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>📊 Player Statistics</h1>
+            <p style="color: #888;">Season Averages by Team</p>
+        </div>
+
+        <div class="team-tabs" id="teamTabs">
+            <div class="loading">Loading teams...</div>
+        </div>
+
+        <div class="stats-container" id="statsContainer">
+            <div class="loading">Select a team to view player statistics</div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <script src="js/config.js"></script>
+    
+    <script>
+        let currentTeamId = null;
+
+        // Load teams and create tabs
+        async function loadTeams() {
+            const teamTabsContainer = document.getElementById('teamTabs');
+            
+            try {
+                const teamsSnapshot = await db.collection('teams').orderBy('name').get();
+                
+                if (teamsSnapshot.empty) {
+                    teamTabsContainer.innerHTML = '<p class="loading">No teams found</p>';
+                    return;
+                }
+                
+                teamTabsContainer.innerHTML = '';
+                
+                teamsSnapshot.forEach((doc, index) => {
+                    const team = doc.data();
+                    const teamTab = document.createElement('button');
+                    teamTab.className = 'team-tab' + (index === 0 ? ' active' : '');
+                    teamTab.textContent = team.name;
+                    teamTab.onclick = () => selectTeam(doc.id, team.name);
+                    teamTabsContainer.appendChild(teamTab);
+                    
+                    // Load first team by default
+                    if (index === 0) {
+                        selectTeam(doc.id, team.name);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error loading teams:', error);
+                teamTabsContainer.innerHTML = '<p class="loading">Error loading teams</p>';
+            }
+        }
+
+        // Select a team and load player stats
+        async function selectTeam(teamId, teamName) {
+            currentTeamId = teamId;
+            
+            // Update active tab
+            document.querySelectorAll('.team-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.textContent === teamName) {
+                    tab.classList.add('active');
+                }
+            });
+            
+            await loadPlayerStats(teamId, teamName);
+        }
+
+        // Load and display player stats
+        async function loadPlayerStats(teamId, teamName) {
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.innerHTML = '<div class="loading">Loading player statistics...</div>';
+            
+            try {
+                // Get all players for this team
+                const playersSnapshot = await db.collection('players')
+                    .where('teamId', '==', teamId)
+                    .orderBy('number')
+                    .get();
+                
+                if (playersSnapshot.empty) {
+                    statsContainer.innerHTML = '<div class="loading">No players found for this team</div>';
+                    return;
+                }
+                
+                const playerStats = [];
+                
+                // Get stats for each player
+                for (const playerDoc of playersSnapshot.docs) {
+                    const player = playerDoc.data();
+                    player.id = playerDoc.id;
+                    
+                    // Get all game stats for this player
+                    const statsSnapshot = await db.collection('gameStats')
+                        .where('playerId', '==', player.id)
+                        .get();
+                    
+                    // Calculate totals and averages
+                    const stats = calculatePlayerStats(statsSnapshot);
+                    
+                    playerStats.push({
+                        name: player.name,
+                        number: player.number,
+                        ...stats
+                    });
+                }
+                
+                // Display the stats table
+                displayStatsTable(teamName, playerStats);
+                
+            } catch (error) {
+                console.error('Error loading player stats:', error);
+                statsContainer.innerHTML = '<div class="loading">Error loading statistics</div>';
+            }
+        }
+
+        // Calculate player statistics from game stats
+        function calculatePlayerStats(statsSnapshot) {
+            let totals = {
+                games: 0,
+                points: 0,
+                rebounds: 0,
+                assists: 0,
+                steals: 0,
+                blocks: 0,
+                fgMade: 0,
+                fgAtt: 0,
+                twoMade: 0,
+                twoAtt: 0,
+                threeMade: 0,
+                threeAtt: 0,
+                ftMade: 0,
+                ftAtt: 0
+            };
+            
+            statsSnapshot.forEach(doc => {
+                const stat = doc.data();
+                totals.games++;
+                totals.points += stat.points || 0;
+                totals.rebounds += stat.rebounds || 0;
+                totals.assists += stat.assists || 0;
+                totals.steals += stat.steals || 0;
+                totals.blocks += stat.blocks || 0;
+                totals.fgMade += stat.fgMade || 0;
+                totals.fgAtt += stat.fgAtt || 0;
+                totals.twoMade += stat.twoMade || 0;
+                totals.twoAtt += stat.twoAtt || 0;
+                totals.threeMade += stat.threeMade || 0;
+                totals.threeAtt += stat.threeAtt || 0;
+                totals.ftMade += stat.ftMade || 0;
+                totals.ftAtt += stat.ftAtt || 0;
+            });
+            
+            // Calculate percentages
+            const fgPct = totals.fgAtt > 0 ? (totals.fgMade / totals.fgAtt * 100).toFixed(1) : '0.0';
+            const twoPct = totals.twoAtt > 0 ? (totals.twoMade / totals.twoAtt * 100).toFixed(1) : '0.0';
+            const threePct = totals.threeAtt > 0 ? (totals.threeMade / totals.threeAtt * 100).toFixed(1) : '0.0';
+            const ftPct = totals.ftAtt > 0 ? (totals.ftMade / totals.ftAtt * 100).toFixed(1) : '0.0';
+            
+            // Calculate averages
+            const avgPoints = totals.games > 0 ? (totals.points / totals.games).toFixed(1) : '0.0';
+            const avgRebounds = totals.games > 0 ? (totals.rebounds / totals.games).toFixed(1) : '0.0';
+            const avgAssists = totals.games > 0 ? (totals.assists / totals.games).toFixed(1) : '0.0';
+            const avgSteals = totals.games > 0 ? (totals.steals / totals.games).toFixed(1) : '0.0';
+            const avgBlocks = totals.games > 0 ? (totals.blocks / totals.games).toFixed(1) : '0.0';
+            
+            return {
+                ...totals,
+                fgPct,
+                twoPct,
+                threePct,
+                ftPct,
+                avgPoints,
+                avgRebounds,
+                avgAssists,
+                avgSteals,
+                avgBlocks
+            };
+        }
+
+        // Display stats in table format
+        function displayStatsTable(teamName, playerStats) {
+            const statsContainer = document.getElementById('statsContainer');
+            
+            let tableHTML = `
+                <h2 class="team-name-header">${teamName}</h2>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>#</th>
+                            <th>GP</th>
+                            <th>FGM</th>
+                            <th>FGA</th>
+                            <th>FG%</th>
+                            <th>2PM</th>
+                            <th>2PA</th>
+                            <th>2P%</th>
+                            <th>3PM</th>
+                            <th>3PA</th>
+                            <th>3P%</th>
+                            <th>FTM</th>
+                            <th>FTA</th>
+                            <th>FT%</th>
+                            <th>REB</th>
+                            <th>AST</th>
+                            <th>STL</th>
+                            <th>BLK</th>
+                            <th>PPG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            playerStats.forEach(player => {
+                tableHTML += `
+                    <tr>
+                        <td class="player-name">${player.name}</td>
+                        <td>${player.number}</td>
+                        <td>${player.games}</td>
+                        <td>${player.fgMade}</td>
+                        <td>${player.fgAtt}</td>
+                        <td class="percentage">${player.fgPct}%</td>
+                        <td>${player.twoMade}</td>
+                        <td>${player.twoAtt}</td>
+                        <td class="percentage">${player.twoPct}%</td>
+                        <td>${player.threeMade}</td>
+                        <td>${player.threeAtt}</td>
+                        <td class="percentage">${player.threePct}%</td>
+                        <td>${player.ftMade}</td>
+                        <td>${player.ftAtt}</td>
+                        <td class="percentage">${player.ftPct}%</td>
+                        <td>${player.avgRebounds}</td>
+                        <td>${player.avgAssists}</td>
+                        <td>${player.avgSteals}</td>
+                        <td>${player.avgBlocks}</td>
+                        <td><strong>${player.avgPoints}</strong></td>
+                    </tr>
+                `;
+            });
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+            
+            statsContainer.innerHTML = tableHTML;
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTeams();
+        });
+    </script>
+</body>
+</html>
