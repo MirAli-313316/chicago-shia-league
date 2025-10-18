@@ -294,6 +294,51 @@
             font-weight: bold;
             color: #FF6B35;
             text-align: left !important;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .player-name:hover {
+            color: #ff8c61;
+            text-decoration: underline;
+        }
+
+        .player-game-stats {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .player-game-stats.show {
+            display: block;
+        }
+
+        .player-game-stats h4 {
+            color: #FF6B35;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .game-stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            margin-bottom: 0.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+        }
+
+        .game-info {
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .game-stats-summary {
+            text-align: right;
+            font-size: 0.9rem;
         }
 
         .loading {
@@ -660,7 +705,7 @@
             playerStats.forEach(player => {
                 tableHTML += `
                     <tr>
-                        <td class="player-name">${player.name}</td>
+                        <td class="player-name" onclick="togglePlayerGameStats('${player.id || player.name}')">${player.name}</td>
                         <td>${player.number}</td>
                         <td>${player.games}</td>
                         <td>${player.fgMade}</td>
@@ -680,6 +725,13 @@
                         <td>${player.avgSteals}</td>
                         <td>${player.avgBlocks}</td>
                         <td><strong>${player.avgPoints}</strong></td>
+                    </tr>
+                    <tr class="player-game-stats-row" id="player-stats-${player.id || player.name}">
+                        <td colspan="21">
+                            <div class="player-game-stats" id="player-game-stats-${player.id || player.name}">
+                                <h4>Loading game statistics...</h4>
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
@@ -721,6 +773,84 @@
         // Mobile logo home button
         function mobileGoHome() {
             window.location.href = 'index.html';
+        }
+
+        // Toggle player game stats
+        async function togglePlayerGameStats(playerId) {
+            const statsContainer = document.getElementById(`player-game-stats-${playerId}`);
+            const statsRow = document.getElementById(`player-stats-${playerId}`);
+
+            if (statsContainer.classList.contains('show')) {
+                // Hide stats
+                statsContainer.classList.remove('show');
+                statsRow.style.display = 'none';
+            } else {
+                // Show stats (load if not already loaded)
+                if (statsContainer.querySelector('h4').textContent === 'Loading game statistics...') {
+                    await loadPlayerGameStats(playerId, statsContainer);
+                }
+                statsContainer.classList.add('show');
+                statsRow.style.display = 'table-row';
+            }
+        }
+
+        // Load and display game-by-game stats for a specific player
+        async function loadPlayerGameStats(playerId, container) {
+            try {
+                // Get all game stats for this player
+                const statsSnapshot = await db.collection('gameStats')
+                    .where('playerId', '==', playerId)
+                    .orderBy('createdAt', 'desc')
+                    .get();
+
+                if (statsSnapshot.empty) {
+                    container.innerHTML = '<h4>No games played yet</h4>';
+                    return;
+                }
+
+                let statsHtml = '<h4>Game-by-Game Statistics</h4>';
+
+                for (const statDoc of statsSnapshot.docs) {
+                    const stat = statDoc.data();
+
+                    // Get game info
+                    const gameDoc = await db.collection('games').doc(stat.gameId).get();
+                    let gameInfo = 'Unknown Game';
+                    if (gameDoc.exists) {
+                        const game = gameDoc.data();
+                        const team1Doc = await db.collection('teams').doc(game.team1Id).get();
+                        const team2Doc = await db.collection('teams').doc(game.team2Id).get();
+                        const team1Name = team1Doc.exists ? team1Doc.data().name : 'Unknown';
+                        const team2Name = team2Doc.exists ? team2Doc.data().name : 'Unknown';
+
+                        // Format date
+                        const gameDate = game.date.toDate();
+                        const formattedDate = gameDate.toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric'
+                        });
+
+                        gameInfo = `${formattedDate} - ${team1Name} vs ${team2Name} (${game.team1Score}-${game.team2Score})`;
+                    }
+
+                    // Format stats summary
+                    const statsSummary = `${stat.points} pts, ${stat.rebounds} reb, ${stat.assists} ast, ${stat.steals} stl, ${stat.blocks} blk`;
+
+                    statsHtml += `
+                        <div class="game-stat-item">
+                            <span class="game-info">${gameInfo}</span>
+                            <span class="game-stats-summary">${statsSummary}</span>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML = statsHtml;
+
+            } catch (error) {
+                console.error('Error loading player game stats:', error);
+                container.innerHTML = '<h4>Error loading game statistics</h4>';
+            }
         }
 
         // Handle mobile navigation active states
