@@ -44,19 +44,15 @@
         .logo {
             width: 50px;
             height: 50px;
-            background: #FF6B35;
+            background-image: url('images/logo.jpeg');
+            background-size: cover;
+            background-position: center;
             border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1.5rem;
             cursor: pointer;
             transition: all 0.3s;
         }
 
         .logo:hover {
-            background: #ff8c61;
             transform: scale(1.05);
         }
 
@@ -124,19 +120,15 @@
             .mobile-logo {
                 width: 40px;
                 height: 40px;
-                background: #FF6B35;
+                background-image: url('images/logo.jpeg');
+                background-size: cover;
+                background-position: center;
                 border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: bold;
-                font-size: 1.2rem;
                 cursor: pointer;
                 transition: all 0.3s;
             }
 
             .mobile-logo:hover {
-                background: #ff8c61;
                 transform: scale(1.05);
             }
 
@@ -418,7 +410,7 @@
     <nav>
         <div class="nav-container">
             <div class="logo-section">
-                <div class="logo" onclick="goHome()">CSL</div>
+                <div class="logo" onclick="goHome()"></div>
                 <div class="league-name">Chicago Shia League</div>
                 <button class="menu-toggle" onclick="toggleMenu()">☰</button>
             </div>
@@ -435,7 +427,7 @@
     <div class="mobile-nav">
         <div class="mobile-nav-container">
             <div class="mobile-logo-section">
-                <div class="mobile-logo" onclick="mobileGoHome()">CSL</div>
+                <div class="mobile-logo" onclick="mobileGoHome()"></div>
                 <div class="mobile-league-name">Chicago Shia League</div>
             </div>
             <button class="mobile-menu-toggle" onclick="mobileToggleMenu()">☰</button>
