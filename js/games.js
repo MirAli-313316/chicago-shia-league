@@ -310,35 +310,38 @@ async function toggleGamePlayerStats(gameId, button) {
     }
 }
 
-// Load and display player stats for a specific game
+// Load and display player stats for a specific game (showing top 3 categories per player)
 async function loadGamePlayerStats(gameId, container) {
     try {
         // Get all player stats for this game
-        const statsSnapshot = await db.collection('gameStats')
+        const gameStatsSnapshot = await db.collection('gameStats')
             .where('gameId', '==', gameId)
             .get();
 
-        if (statsSnapshot.empty) {
+        if (gameStatsSnapshot.empty) {
             container.innerHTML = '<h5>No player statistics recorded for this game</h5>';
             return;
         }
 
-        let statsHtml = '<h5>Player Statistics</h5>';
+        let statsHtml = '<h5>Top Performances in This Game</h5>';
 
-        for (const statDoc of statsSnapshot.docs) {
-            const stat = statDoc.data();
+        // For each player in this game, show their top 3 categories
+        for (const statDoc of gameStatsSnapshot.docs) {
+            const gameStat = statDoc.data();
 
             // Get player name
-            const playerDoc = await db.collection('players').doc(stat.playerId).get();
+            const playerDoc = await db.collection('players').doc(gameStat.playerId).get();
             const playerName = playerDoc.exists ? playerDoc.data().name : 'Unknown Player';
 
-            // Format stats summary
-            const statsSummary = `${stat.points} pts, ${stat.rebounds} reb, ${stat.assists} ast`;
+            // Get top 3 performing categories for this game
+            const topCategories = getTopCategoriesForGame(gameStat);
 
             statsHtml += `
                 <div class="player-stat-item">
                     <span class="player-name">${playerName}</span>
-                    <span class="player-stats-summary">${statsSummary}</span>
+                    <div class="player-game-categories">
+                        ${topCategories.map(cat => `<div><strong>${cat.name}:</strong> ${cat.value}</div>`).join('')}
+                    </div>
                 </div>
             `;
         }
@@ -350,3 +353,21 @@ async function loadGamePlayerStats(gameId, container) {
         container.innerHTML = '<h5>Error loading player statistics</h5>';
     }
 }
+
+// Get top 3 performing categories for a specific game
+function getTopCategoriesForGame(gameStat) {
+    const categories = [
+        { name: 'Points', value: gameStat.points || 0, key: 'points' },
+        { name: 'Rebounds', value: gameStat.rebounds || 0, key: 'rebounds' },
+        { name: 'Assists', value: gameStat.assists || 0, key: 'assists' },
+        { name: 'Steals', value: gameStat.steals || 0, key: 'steals' },
+        { name: 'Blocks', value: gameStat.blocks || 0, key: 'blocks' },
+        { name: '3-Pointers', value: gameStat.threeMade || 0, key: 'threeMade' }
+    ];
+
+    // Sort by value (highest to lowest) and return top 3
+    return categories
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 3);
+}
+
