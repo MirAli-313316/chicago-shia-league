@@ -547,6 +547,7 @@
                 for (const playerDoc of playersSnapshot.docs) {
                     const player = playerDoc.data();
                     player.id = playerDoc.id;
+                    console.log('Processing player:', player.name, 'ID:', player.id);
 
                     try {
                         // Get all game stats for this player
@@ -558,6 +559,7 @@
                         const stats = calculatePlayerStats(statsSnapshot);
 
                         playerStats.push({
+                            id: player.id,
                             name: player.name,
                             number: player.number,
                             ...stats
@@ -566,6 +568,7 @@
                         console.error(`Error loading stats for player ${player.name}:`, playerError);
                         // Continue with next player instead of failing completely
                         playerStats.push({
+                            id: player.id,
                             name: player.name,
                             number: player.number,
                             games: 0,
@@ -797,13 +800,23 @@
         // Load and display game-by-game stats for a specific player
         async function loadPlayerGameStats(playerId, container) {
             try {
+                console.log('Loading game stats for player:', playerId);
+
                 // Get all game stats for this player
                 const statsSnapshot = await db.collection('gameStats')
                     .where('playerId', '==', playerId)
                     .orderBy('createdAt', 'desc')
                     .get();
 
+                console.log('Found', statsSnapshot.size, 'game stats for player', playerId);
+
+                // Debug: List all game stats to see what we have
+                statsSnapshot.forEach(doc => {
+                    console.log('Game stat:', doc.id, doc.data());
+                });
+
                 if (statsSnapshot.empty) {
+                    console.log('No game stats found for player:', playerId);
                     container.innerHTML = '<h4>No games played yet</h4>';
                     return;
                 }
