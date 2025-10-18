@@ -27,9 +27,9 @@ async function loadCurrentWeekGames() {
         
         // Clear loading state
         gamesContainer.innerHTML = '';
-        
+
         if (gamesSnapshot.empty) {
-            gamesContainer.innerHTML = '<p class="loading">No games scheduled for this week yet.</p>';
+            gamesContainer.innerHTML = '<div class="loading">No games scheduled for this week yet. Check back later or contact your league admin.</div>';
             return;
         }
         
@@ -55,7 +55,7 @@ async function loadCurrentWeekGames() {
         
     } catch (error) {
         console.error('Error loading games:', error);
-        gamesContainer.innerHTML = '<p class="loading">Error loading games. Please try again later.</p>';
+        gamesContainer.innerHTML = '<div class="loading">Error loading games. Please check your connection and try refreshing the page.</div>';
     }
 }
 
