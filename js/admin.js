@@ -1287,6 +1287,12 @@ function calculateStats() {
     const fgMade = twoMade + threeMade;
     document.getElementById('fgMade').value = fgMade;
 
+    // Auto-calculate FG Attempted (2PT Att + 3PT Att)
+    const twoAtt = parseInt(document.getElementById('twoAtt').value) || 0;
+    const threeAtt = parseInt(document.getElementById('threeAtt').value) || 0;
+    const fgAtt = twoAtt + threeAtt;
+    document.getElementById('fgAtt').value = fgAtt;
+
     // Auto-calculate Points
     const points = (twoMade * 2) + (threeMade * 3) + ftMade;
     document.getElementById('points').value = points;
@@ -1302,6 +1308,12 @@ function calculateExistingStats() {
     const fgMade = twoMade + threeMade;
     document.getElementById('existingFgMade').value = fgMade;
 
+    // Auto-calculate FG Attempted (2PT Att + 3PT Att)
+    const twoAtt = parseInt(document.getElementById('existingTwoAtt').value) || 0;
+    const threeAtt = parseInt(document.getElementById('existingThreeAtt').value) || 0;
+    const fgAtt = twoAtt + threeAtt;
+    document.getElementById('existingFgAtt').value = fgAtt;
+
     // Auto-calculate Points
     const points = (twoMade * 2) + (threeMade * 3) + ftMade;
     document.getElementById('existingPoints').value = points;
@@ -1313,17 +1325,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const twoMadeInput = document.getElementById('twoMade');
     const threeMadeInput = document.getElementById('threeMade');
     const ftMadeInput = document.getElementById('ftMade');
+    const twoAttInput = document.getElementById('twoAtt');
+    const threeAttInput = document.getElementById('threeAtt');
 
     if (twoMadeInput) twoMadeInput.addEventListener('input', calculateStats);
     if (threeMadeInput) threeMadeInput.addEventListener('input', calculateStats);
     if (ftMadeInput) ftMadeInput.addEventListener('input', calculateStats);
+    if (twoAttInput) twoAttInput.addEventListener('input', calculateStats);
+    if (threeAttInput) threeAttInput.addEventListener('input', calculateStats);
 
     // Add event listeners for auto-calculation in existing game stats form
     const existingTwoMadeInput = document.getElementById('existingTwoMade');
     const existingThreeMadeInput = document.getElementById('existingThreeMade');
     const existingFtMadeInput = document.getElementById('existingFtMade');
+    const existingTwoAttInput = document.getElementById('existingTwoAtt');
+    const existingThreeAttInput = document.getElementById('existingThreeAtt');
 
     if (existingTwoMadeInput) existingTwoMadeInput.addEventListener('input', calculateExistingStats);
     if (existingThreeMadeInput) existingThreeMadeInput.addEventListener('input', calculateExistingStats);
     if (existingFtMadeInput) existingFtMadeInput.addEventListener('input', calculateExistingStats);
+    if (existingTwoAttInput) existingTwoAttInput.addEventListener('input', calculateExistingStats);
+    if (existingThreeAttInput) existingThreeAttInput.addEventListener('input', calculateExistingStats);
 });
