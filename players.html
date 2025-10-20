@@ -270,6 +270,9 @@
             font-weight: bold;
             color: #FF6B35;
             border: 1px solid rgba(255, 107, 53, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .stats-table td {
@@ -280,6 +283,10 @@
 
         .stats-table tbody tr:hover {
             background: rgba(255, 107, 53, 0.1);
+        }
+
+        .stats-table tbody tr:hover .player-game-stats {
+            background: rgba(255, 107, 53, 0.15);
         }
 
         .player-name {
@@ -329,7 +336,7 @@
         }
 
         .game-stats-summary {
-            text-align: right;
+            text-align: left;
             font-size: 0.9rem;
         }
 
@@ -379,6 +386,8 @@
 
             .stats-container {
                 padding: 1rem;
+                max-height: 70vh;
+                overflow-y: auto;
             }
 
             .team-tabs {
@@ -839,8 +848,8 @@
                         gameInfo = `${formattedDate} - ${team1Name} vs ${team2Name} (${game.team1Score}-${game.team2Score})`;
                     }
 
-                    // Format stats summary
-                    const statsSummary = `${stat.points} pts, ${stat.rebounds} reb, ${stat.assists} ast, ${stat.steals} stl, ${stat.blocks} blk`;
+                    // Format stats summary with all requested categories
+                    const statsSummary = `${stat.points} pts, ${stat.rebounds} reb, ${stat.steals} stl, ${stat.blocks} blk, ${stat.fgMade}/${stat.fgAtt} fg, ${stat.ftMade}/${stat.ftAtt} ft, ${stat.twoMade}/${stat.twoAtt} 2pt, ${stat.threeMade}/${stat.threeAtt} 3pt`;
 
                     statsHtml += `
                         <div class="game-stat-item">
