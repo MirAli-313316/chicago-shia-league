@@ -323,21 +323,25 @@
 
         .game-stat-item {
             display: flex;
-            justify-content: space-between;
+            align-items: flex-start;
             padding: 0.5rem;
             margin-bottom: 0.25rem;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 3px;
+            gap: 1rem;
         }
 
         .game-info {
             font-weight: bold;
             color: #FF6B35;
+            min-width: 200px;
+            flex-shrink: 0;
         }
 
         .game-stats-summary {
             text-align: left;
             font-size: 0.9rem;
+            flex: 1;
         }
 
         .loading {
