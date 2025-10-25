@@ -18,7 +18,7 @@ A basketball league statistics website built with Firebase (Firestore + Auth) an
 ## Project Structure
 ```
 chicago-shia-league/
-├── index.html          # Homepage - shows current week games
+├── index.html          # Homepage - shows last week games
 ├── admin.html          # Admin dashboard - add games, players, teams, manage existing data
 ├── players.html        # Player stats page - stats by team
 ├── games.html          # Games by week - view all games organized by week
@@ -117,7 +117,7 @@ chicago-shia-league/
 
 #### 1. Homepage (index.html)
 - Displays current season and week
-- Shows this week's games (3 games per week)
+- Shows last week's games (3 games per week)
 - Game leaders: top scorer, rebounder, shot blocker, stealer per game
 - Mobile responsive
 - **ISSUE:** Currently showing static data, not loading from Firebase

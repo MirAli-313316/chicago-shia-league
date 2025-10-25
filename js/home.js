@@ -1,23 +1,23 @@
-// home.js - Loads and displays current week's games
+// home.js - Loads and displays last week's games
 
 // Wait for DOM and Firebase to be ready
 document.addEventListener('DOMContentLoaded', async function() {
-    await loadCurrentWeekGames();
+    await loadLastWeekGames();
     updateSeasonInfo();
 });
 
-// Load current week's games
-async function loadCurrentWeekGames() {
+// Load last week's games
+async function loadLastWeekGames() {
     const gamesContainer = document.getElementById('gamesContainer');
     
     try {
-        // Get current season and week from settings
+        // Get current season and week from settings (display as last week)
         const settingsDoc = await db.collection('settings').doc('league').get();
         const settings = settingsDoc.data();
         const currentSeason = settings.currentSeason;
         const currentWeek = settings.currentWeek;
         
-        // Query games for current week
+        // Query games for last week
         // Note: Requires composite index on (season, week, date)
         const gamesSnapshot = await db.collection('games')
             .where('season', '==', currentSeason)
@@ -29,7 +29,7 @@ async function loadCurrentWeekGames() {
         gamesContainer.innerHTML = '';
 
         if (gamesSnapshot.empty) {
-            gamesContainer.innerHTML = '<div class="loading">No games scheduled for this week yet. Check back later or contact your league admin.</div>';
+            gamesContainer.innerHTML = '<div class="loading">No games scheduled for last week yet. Check back later or contact your league admin.</div>';
             return;
         }
         

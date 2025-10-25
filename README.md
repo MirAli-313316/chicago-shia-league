@@ -9,7 +9,7 @@ The Chicago Shia League management system provides a complete solution for track
 ## Features
 
 ### Public Features
-- **Homepage**: Current week games with live scores and game leaders
+- **Homepage**: Last week games with live scores and game leaders
 - **Games by Week**: Historical game data organized by week
 - **Player Statistics**: Season averages and performance metrics by team
 - **Responsive Design**: Optimized for desktop and mobile devices

@@ -140,7 +140,7 @@ if (fgMade !== calculatedFG) {
 - Sort by wins
 - Show games played
 - Points for/against
-- Current week standings
+- Last week standings
 
 ---
 
