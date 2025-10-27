@@ -12,6 +12,10 @@ firebase.auth().onAuthStateChanged(user => {
         loginSection.style.display = 'none';
         adminDashboard.style.display = 'block';
         loadTeams();
+        // Switch to league settings tab by default to show current status
+        setTimeout(() => {
+            switchTab('leagueSettings');
+        }, 100);
     } else {
         // User is not logged in
         loginSection.style.display = 'block';
@@ -56,18 +60,22 @@ function switchTab(tabName) {
     });
 
     // Show selected tab
-    if (tabName === 'addGame') {
-        document.getElementById('addGameTab').classList.add('active');
+    if (tabName === 'leagueSettings') {
+        document.getElementById('leagueSettingsTab').classList.add('active');
         document.querySelectorAll('.tab-btn')[0].classList.add('active');
+        loadLeagueSettings(); // Load settings when switching to this tab
+    } else if (tabName === 'addGame') {
+        document.getElementById('addGameTab').classList.add('active');
+        document.querySelectorAll('.tab-btn')[1].classList.add('active');
     } else if (tabName === 'addPlayer') {
         document.getElementById('addPlayerTab').classList.add('active');
-        document.querySelectorAll('.tab-btn')[1].classList.add('active');
+        document.querySelectorAll('.tab-btn')[2].classList.add('active');
     } else if (tabName === 'addTeam') {
         document.getElementById('addTeamTab').classList.add('active');
-        document.querySelectorAll('.tab-btn')[2].classList.add('active');
+        document.querySelectorAll('.tab-btn')[3].classList.add('active');
     } else if (tabName === 'manageGames') {
         document.getElementById('manageGamesTab').classList.add('active');
-        document.querySelectorAll('.tab-btn')[3].classList.add('active');
+        document.querySelectorAll('.tab-btn')[4].classList.add('active');
         loadExistingGames(); // Load games when switching to this tab
     } else if (tabName === 'manageData') {
         console.log('Activating manageData tab');
@@ -75,7 +83,7 @@ function switchTab(tabName) {
         if (manageDataTab) {
             console.log('manageDataTab element found, current classes:', manageDataTab.className);
             manageDataTab.classList.add('active');
-            document.querySelectorAll('.tab-btn')[4].classList.add('active');
+            document.querySelectorAll('.tab-btn')[5].classList.add('active');
             console.log('Tab activated, new classes:', manageDataTab.className);
             console.log('Tab visible?', manageDataTab.style.display !== 'none' && getComputedStyle(manageDataTab).display !== 'none');
             console.log('Tab calling loadManagementData()');
@@ -1274,6 +1282,137 @@ function cancelPlayerEdit() {
     document.getElementById('playerEditForm').classList.add('hidden');
     document.getElementById('playersList').value = '';
 }
+
+// ===== LEAGUE SETTINGS FUNCTIONS =====
+
+// Load league settings and display them
+async function loadLeagueSettings() {
+    try {
+        console.log('Loading league settings...');
+
+        // Load current settings
+        const settingsDoc = await db.collection('settings').doc('league').get();
+        const settings = settingsDoc.data();
+
+        if (settings) {
+            // Display current settings
+            const settingsDisplay = document.getElementById('currentSettingsDisplay');
+            settingsDisplay.innerHTML = `
+                <div><strong>Current Season:</strong> ${settings.currentSeason}</div>
+                <div><strong>Current Week:</strong> ${settings.currentWeek}</div>
+                <div><strong>League Name:</strong> ${settings.leagueName}</div>
+                <div><strong>Last Updated:</strong> ${settings.updatedAt ? settings.updatedAt.toDate().toLocaleString() : 'Never'}</div>
+            `;
+
+            // Populate form fields
+            document.getElementById('currentSeason').value = settings.currentSeason;
+            document.getElementById('currentWeek').value = settings.currentWeek;
+            document.getElementById('leagueName').value = settings.leagueName;
+        } else {
+            document.getElementById('currentSettingsDisplay').innerHTML =
+                '<div style="color: #ff6b6b;">No settings found! Please create initial settings.</div>';
+        }
+
+        // Load games overview
+        await loadGamesOverview();
+
+    } catch (error) {
+        console.error('Error loading league settings:', error);
+        document.getElementById('currentSettingsDisplay').innerHTML =
+            '<div style="color: #ff6b6b;">Error loading settings: ' + error.message + '</div>';
+    }
+}
+
+// Load games overview for the current season
+async function loadGamesOverview() {
+    try {
+        const settingsDoc = await db.collection('settings').doc('league').get();
+        const settings = settingsDoc.data();
+        const currentSeason = settings.currentSeason;
+
+        // Get all games for current season
+        const gamesSnapshot = await db.collection('games')
+            .where('season', '==', currentSeason)
+            .get();
+
+        const gamesOverview = document.getElementById('gamesOverview');
+        gamesOverview.innerHTML = 'Loading...';
+
+        if (gamesSnapshot.empty) {
+            gamesOverview.innerHTML = '<div style="color: #888;">No games found for Season ' + currentSeason + '</div>';
+            return;
+        }
+
+        // Group games by week
+        const gamesByWeek = {};
+        gamesSnapshot.forEach(doc => {
+            const game = doc.data();
+            if (!gamesByWeek[game.week]) {
+                gamesByWeek[game.week] = [];
+            }
+            gamesByWeek[game.week].push(game);
+        });
+
+        // Create overview display
+        let overviewHtml = `<div><strong>Season ${currentSeason} Games:</strong></div>`;
+
+        const sortedWeeks = Object.keys(gamesByWeek).sort((a, b) => parseInt(a) - parseInt(b));
+
+        sortedWeeks.forEach(week => {
+            const games = gamesByWeek[week];
+            overviewHtml += `
+                <div style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 5px;">
+                    <div><strong>Week ${week}${week == settings.currentWeek ? ' (Current)' : ''}:</strong> ${games.length} games</div>
+                    <div style="font-size: 0.9rem; color: #888; margin-left: 1rem;">
+                        ${games.map(game => {
+                            const date = game.date.toDate().toLocaleDateString();
+                            return `${date}`;
+                        }).join(', ')}
+                    </div>
+                </div>
+            `;
+        });
+
+        gamesOverview.innerHTML = overviewHtml;
+
+    } catch (error) {
+        console.error('Error loading games overview:', error);
+        document.getElementById('gamesOverview').innerHTML =
+            '<div style="color: #ff6b6b;">Error loading games overview: ' + error.message + '</div>';
+    }
+}
+
+// Update league settings form handler
+document.getElementById('updateSettingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const successMessage = document.getElementById('settingsSuccessMessage');
+
+    try {
+        const settingsData = {
+            currentSeason: parseInt(document.getElementById('currentSeason').value),
+            currentWeek: parseInt(document.getElementById('currentWeek').value),
+            leagueName: document.getElementById('leagueName').value,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        await db.collection('settings').doc('league').set(settingsData, { merge: true });
+
+        successMessage.textContent = 'League settings updated successfully! The home page will now show Week ' + settingsData.currentWeek + ' games.';
+        successMessage.classList.remove('hidden');
+
+        // Reload settings display
+        await loadLeagueSettings();
+
+        setTimeout(() => {
+            successMessage.classList.add('hidden');
+        }, 5000);
+
+    } catch (error) {
+        console.error('Error updating league settings:', error);
+        alert('Error updating settings: ' + error.message);
+    }
+});
 
 // ===== AUTO-CALCULATION FUNCTIONS =====
 

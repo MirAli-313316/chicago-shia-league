@@ -504,15 +504,56 @@
 
             <!-- Tabs -->
             <div class="admin-tabs">
-                <button class="tab-btn active" onclick="switchTab('addGame')">Add Game Stats</button>
+                <button class="tab-btn active" onclick="switchTab('leagueSettings')">League Settings</button>
+                <button class="tab-btn" onclick="switchTab('addGame')">Add Game Stats</button>
                 <button class="tab-btn" onclick="switchTab('addPlayer')">Add Player</button>
                 <button class="tab-btn" onclick="switchTab('addTeam')">Add Team</button>
                 <button class="tab-btn" onclick="switchTab('manageGames')">Add Stats to Existing Game</button>
                 <button class="tab-btn" onclick="switchTab('manageData')">Manage Existing Data</button>
             </div>
 
-            <!-- Tab 1: Add Game Stats -->
-            <div id="addGameTab" class="tab-content active">
+            <!-- Tab 1: League Settings -->
+            <div id="leagueSettingsTab" class="tab-content active">
+                <h2>League Settings</h2>
+                <div id="settingsSuccessMessage" class="success-message hidden"></div>
+
+                <div style="background: rgba(255, 107, 53, 0.1); padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #FF6B35;">
+                    <p><strong>Current Settings:</strong></p>
+                    <div id="currentSettingsDisplay" style="margin-top: 1rem; padding: 1rem; background: rgba(0,0,0,0.3); border-radius: 5px;">
+                        Loading current settings...
+                    </div>
+                </div>
+
+                <form id="updateSettingsForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="currentSeason">Current Season</label>
+                            <input type="number" id="currentSeason" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="currentWeek">Current Week</label>
+                            <input type="number" id="currentWeek" min="1" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="leagueName">League Name</label>
+                        <input type="text" id="leagueName" required>
+                    </div>
+
+                    <button type="submit" class="btn">Update League Settings</button>
+                </form>
+
+                <div style="margin-top: 2rem; padding: 1rem; background: rgba(0, 128, 255, 0.1); border-radius: 8px; border-left: 4px solid #0080ff;">
+                    <p><strong>Games Overview:</strong></p>
+                    <div id="gamesOverview" style="margin-top: 1rem;">
+                        Loading games overview...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Add Game Stats -->
+            <div id="addGameTab" class="tab-content">
                 <h2>Add Game Statistics</h2>
                 <div id="gameSuccessMessage" class="success-message hidden"></div>
                 
@@ -644,7 +685,7 @@
                 </div>
             </div>
 
-            <!-- Tab 2: Add Player -->
+            <!-- Tab 3: Add Player -->
             <div id="addPlayerTab" class="tab-content">
                 <h2>Add New Player</h2>
                 <div id="playerSuccessMessage" class="success-message hidden"></div>
@@ -672,7 +713,7 @@
                 </form>
             </div>
 
-            <!-- Tab 3: Add Team -->
+            <!-- Tab 4: Add Team -->
             <div id="addTeamTab" class="tab-content">
                 <h2>Add New Team</h2>
                 <div id="teamSuccessMessage" class="success-message hidden"></div>
@@ -698,7 +739,7 @@
                 </form>
             </div>
 
-            <!-- Tab 4: Add Stats to Existing Game -->
+            <!-- Tab 5: Add Stats to Existing Game -->
             <div id="manageGamesTab" class="tab-content">
                 <h2>Add Stats to Existing Game</h2>
                 <div id="manageGameSuccessMessage" class="success-message hidden"></div>
@@ -807,7 +848,7 @@
                 </div>
             </div>
 
-            <!-- Tab 5: Manage Existing Data -->
+            <!-- Tab 6: Manage Existing Data -->
             <div id="manageDataTab" class="tab-content">
                 <h2>Manage Existing Data</h2>
                 <div id="manageDataSuccessMessage" class="success-message hidden"></div>

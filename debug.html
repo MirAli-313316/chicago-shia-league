@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Debug - Chicago Shia League</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .section {
+            background: rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            margin: 1rem 0;
+            border-radius: 8px;
+            border-left: 4px solid #FF6B35;
+        }
+        .error {
+            background: rgba(255,0,0,0.1);
+            border-left-color: #ff6b6b;
+        }
+        .success {
+            background: rgba(0,255,0,0.1);
+            border-left-color: #6bff6b;
+        }
+        button {
+            background: #FF6B35;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0.5rem;
+        }
+        button:hover {
+            background: #ff8c61;
+        }
+        pre {
+            background: rgba(0,0,0,0.3);
+            padding: 1rem;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .loading {
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏀 Chicago Shia League - Database Debug</h1>
+    <p>This tool helps check the current database state without authentication.</p>
+
+    <div class="section">
+        <h2>🔧 Current League Settings</h2>
+        <button onclick="checkSettings()">Check Settings</button>
+        <div id="settingsResult" class="loading">Click to check current settings...</div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Games Overview</h2>
+        <button onclick="checkGames()">Check All Games</button>
+        <div id="gamesResult" class="loading">Click to check games in database...</div>
+    </div>
+
+    <div class="section">
+        <h2>🏀 Games by Week</h2>
+        <button onclick="checkGamesByWeek()">Check Games by Week</button>
+        <div id="gamesByWeekResult" class="loading">Click to check games organized by week...</div>
+    </div>
+
+    <div class="section">
+        <h2>🔧 Update Current Week</h2>
+        <p>If the current week needs to be updated, use this section:</p>
+        <label>
+            Set Current Week:
+            <input type="number" id="newWeek" min="1" value="2" style="margin: 0.5rem;">
+        </label>
+        <button onclick="updateCurrentWeek()">Update Week</button>
+        <div id="updateResult" class="loading">Ready to update...</div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <!-- Config -->
+    <script src="js/config.js"></script>
+
+    <script>
+        // Check current league settings
+        async function checkSettings() {
+            const result = document.getElementById('settingsResult');
+            result.innerHTML = '<div class="loading">Loading settings...</div>';
+
+            try {
+                const settingsDoc = await db.collection('settings').doc('league').get();
+                if (settingsDoc.exists) {
+                    const settings = settingsDoc.data();
+                    result.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Settings Found:</h3>
+                            <pre>${JSON.stringify(settings, null, 2)}</pre>
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No Settings Found</h3>
+                            <p>The settings document doesn't exist. You may need to create it.</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Loading Settings</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Check all games
+        async function checkGames() {
+            const result = document.getElementById('gamesResult');
+            result.innerHTML = '<div class="loading">Loading games...</div>';
+
+            try {
+                const gamesSnapshot = await db.collection('games')
+                    .orderBy('date', 'desc')
+                    .get();
+
+                if (gamesSnapshot.empty) {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No Games Found</h3>
+                            <p>No games exist in the database yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let gamesHtml = `<div class="success"><h3>✅ ${gamesSnapshot.size} Games Found:</h3>`;
+
+                for (const doc of gamesSnapshot.docs) {
+                    const game = doc.data();
+                    const date = game.date.toDate().toLocaleDateString();
+                    gamesHtml += `
+                        <div style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 5px;">
+                            <strong>${date} - Week ${game.week}</strong><br>
+                            Game ID: ${doc.id}<br>
+                            Teams: ${game.team1Id} vs ${game.team2Id}<br>
+                            Score: ${game.team1Score} - ${game.team2Score}<br>
+                            Season: ${game.season}
+                        </div>
+                    `;
+                }
+
+                gamesHtml += `</div>`;
+                result.innerHTML = gamesHtml;
+
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Loading Games</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Check games organized by week
+        async function checkGamesByWeek() {
+            const result = document.getElementById('gamesByWeekResult');
+            result.innerHTML = '<div class="loading">Loading games by week...</div>';
+
+            try {
+                const gamesSnapshot = await db.collection('games')
+                    .orderBy('season')
+                    .orderBy('week')
+                    .orderBy('date')
+                    .get();
+
+                if (gamesSnapshot.empty) {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No Games Found</h3>
+                            <p>No games exist in the database yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Group games by season and week
+                const gamesBySeasonWeek = {};
+                gamesSnapshot.forEach(doc => {
+                    const game = doc.data();
+                    const season = game.season;
+                    const week = game.week;
+
+                    if (!gamesBySeasonWeek[season]) {
+                        gamesBySeasonWeek[season] = {};
+                    }
+                    if (!gamesBySeasonWeek[season][week]) {
+                        gamesBySeasonWeek[season][week] = [];
+                    }
+
+                    gamesBySeasonWeek[season][week].push({
+                        id: doc.id,
+                        ...game
+                    });
+                });
+
+                let html = `<div class="success"><h3>✅ Games Organized by Week:</h3>`;
+
+                for (const season in gamesBySeasonWeek) {
+                    html += `<h4>Season ${season}:</h4>`;
+
+                    const weeks = Object.keys(gamesBySeasonWeek[season]).sort((a, b) => parseInt(a) - parseInt(b));
+
+                    for (const week of weeks) {
+                        const games = gamesBySeasonWeek[season][week];
+                        html += `
+                            <div style="margin: 0.5rem 0; padding: 0.5rem; background: rgba(0,0,0,0.3); border-radius: 5px;">
+                                <strong>Week ${week}:</strong> ${games.length} games
+                                <div style="margin-left: 1rem; font-size: 0.9rem; color: #888;">
+                                    ${games.map(game => {
+                                        const date = game.date.toDate().toLocaleDateString();
+                                        return `${date} (${game.team1Score}-${game.team2Score})`;
+                                    }).join(', ')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+
+                html += `</div>`;
+                result.innerHTML = html;
+
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Loading Games by Week</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Update current week
+        async function updateCurrentWeek() {
+            const newWeek = parseInt(document.getElementById('newWeek').value);
+            const result = document.getElementById('updateResult');
+
+            if (!newWeek || newWeek < 1) {
+                result.innerHTML = '<div class="error">Please enter a valid week number (1 or higher)</div>';
+                return;
+            }
+
+            result.innerHTML = '<div class="loading">Updating current week...</div>';
+
+            try {
+                // First check if settings exist
+                const settingsDoc = await db.collection('settings').doc('league').get();
+
+                let updateData;
+                if (settingsDoc.exists) {
+                    const currentSettings = settingsDoc.data();
+                    updateData = {
+                        currentWeek: newWeek,
+                        currentSeason: currentSettings.currentSeason || 3, // Default to season 3
+                        leagueName: currentSettings.leagueName || 'Chicago Shia League',
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                } else {
+                    // Create new settings if they don't exist
+                    updateData = {
+                        currentWeek: newWeek,
+                        currentSeason: 3, // Default to season 3
+                        leagueName: 'Chicago Shia League',
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    };
+                }
+
+                await db.collection('settings').doc('league').set(updateData, { merge: true });
+
+                result.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Current Week Updated!</h3>
+                        <p>Current week has been set to <strong>Week ${newWeek}</strong>.</p>
+                        <p>The home page will now show Week ${newWeek} games.</p>
+                        <p>Full settings: <pre>${JSON.stringify(updateData, null, 2)}</pre></p>
+                    </div>
+                `;
+
+                // Refresh the settings check
+                setTimeout(() => {
+                    checkSettings();
+                }, 1000);
+
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Updating Week</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-load settings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkSettings();
+        });
+    </script>
+</body>
+</html>
