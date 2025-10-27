@@ -85,6 +85,12 @@
         <div id="updateResult" class="loading">Ready to update...</div>
     </div>
 
+    <div class="section">
+        <h2>📈 Latest Week Detection</h2>
+        <button onclick="checkLatestWeek()">Find Latest Week</button>
+        <div id="latestWeekResult" class="loading">Click to find the latest week with games...</div>
+    </div>
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -308,6 +314,88 @@
                 result.innerHTML = `
                     <div class="error">
                         <h3>❌ Error Updating Week</h3>
+                        <pre>${error.message}</pre>
+                    </div>
+                `;
+            }
+        }
+
+        // Check latest week
+        async function checkLatestWeek() {
+            const result = document.getElementById('latestWeekResult');
+            result.innerHTML = '<div class="loading">Finding latest week...</div>';
+
+            try {
+                // Get current season from settings
+                const settingsDoc = await db.collection('settings').doc('league').get();
+                const settings = settingsDoc.data();
+
+                if (!settings) {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No Settings Found</h3>
+                            <p>Please set up league settings first.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const currentSeason = settings.currentSeason;
+
+                // Find the latest week by getting all games for the season
+                const allGamesSnapshot = await db.collection('games')
+                    .where('season', '==', currentSeason)
+                    .orderBy('week', 'desc')
+                    .limit(1)
+                    .get();
+
+                if (allGamesSnapshot.empty) {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h3>❌ No Games Found</h3>
+                            <p>No games exist for Season ${currentSeason} yet.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Get the latest week
+                const latestGame = allGamesSnapshot.docs[0].data();
+                const latestWeek = latestGame.week;
+
+                // Get games for the latest week
+                const latestGamesSnapshot = await db.collection('games')
+                    .where('season', '==', currentSeason)
+                    .where('week', '==', latestWeek)
+                    .orderBy('date', 'desc')
+                    .get();
+
+                let gamesInfo = '';
+                latestGamesSnapshot.forEach(doc => {
+                    const game = doc.data();
+                    const date = game.date.toDate().toLocaleDateString();
+                    gamesInfo += `<div style="margin: 0.25rem 0; padding: 0.25rem; background: rgba(0,0,0,0.3); border-radius: 3px;">
+                        ${date}: ${game.team1Id} vs ${game.team2Id} (${game.team1Score}-${game.team2Score})
+                    </div>`;
+                });
+
+                result.innerHTML = `
+                    <div class="success">
+                        <h3>✅ Latest Week Found!</h3>
+                        <p><strong>Season ${currentSeason}, Week ${latestWeek}</strong></p>
+                        <p>Current setting: Week ${settings.currentWeek}</p>
+                        <p><strong>${latestGamesSnapshot.size} games</strong> found for this week:</p>
+                        ${gamesInfo}
+                        <p style="margin-top: 1rem; padding: 0.5rem; background: rgba(255,107,53,0.1); border-radius: 5px; border-left: 3px solid #FF6B35;">
+                            💡 The home page now automatically shows Week ${latestWeek} games (the latest week with games).
+                        </p>
+                    </div>
+                `;
+
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Error Finding Latest Week</h3>
                         <pre>${error.message}</pre>
                     </div>
                 `;

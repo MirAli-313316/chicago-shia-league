@@ -1,27 +1,41 @@
-// home.js - Loads and displays current week's games
+// home.js - Loads and displays latest week's games
 
 // Wait for DOM and Firebase to be ready
 document.addEventListener('DOMContentLoaded', async function() {
-    await loadCurrentWeekGames();
+    await loadLatestWeekGames();
     updateSeasonInfo();
 });
 
-// Load current week's games
-async function loadCurrentWeekGames() {
+// Load latest week's games
+async function loadLatestWeekGames() {
     const gamesContainer = document.getElementById('gamesContainer');
 
     try {
-        // Get current season and week from settings
+        // Get current season from settings
         const settingsDoc = await db.collection('settings').doc('league').get();
         const settings = settingsDoc.data();
         const currentSeason = settings.currentSeason;
-        const currentWeek = settings.currentWeek;
 
-        // Query games for current week
-        // Note: Requires composite index on (season, week, date)
+        // First, find the latest week by getting all games for the season
+        const allGamesSnapshot = await db.collection('games')
+            .where('season', '==', currentSeason)
+            .orderBy('week', 'desc')
+            .limit(1)
+            .get();
+
+        if (allGamesSnapshot.empty) {
+            gamesContainer.innerHTML = '<div class="loading">No games scheduled yet. Check back later or contact your league admin.</div>';
+            return;
+        }
+
+        // Get the latest week
+        const latestGame = allGamesSnapshot.docs[0].data();
+        const latestWeek = latestGame.week;
+
+        // Query games for the latest week
         const gamesSnapshot = await db.collection('games')
             .where('season', '==', currentSeason)
-            .where('week', '==', currentWeek)
+            .where('week', '==', latestWeek)
             .orderBy('date', 'desc')
             .get();
 
@@ -29,30 +43,30 @@ async function loadCurrentWeekGames() {
         gamesContainer.innerHTML = '';
 
         if (gamesSnapshot.empty) {
-            gamesContainer.innerHTML = '<div class="loading">No games scheduled for this week yet. Check back later or contact your league admin.</div>';
+            gamesContainer.innerHTML = '<div class="loading">No games scheduled for the latest week yet. Check back later or contact your league admin.</div>';
             return;
         }
-        
+
         // Process each game
         for (const gameDoc of gamesSnapshot.docs) {
             const game = gameDoc.data();
             game.id = gameDoc.id;
-            
+
             // Get team details
             const team1Doc = await db.collection('teams').doc(game.team1Id).get();
             const team2Doc = await db.collection('teams').doc(game.team2Id).get();
-            
+
             const team1 = team1Doc.data();
             const team2 = team2Doc.data();
-            
+
             // Get game leaders
             const leaders = await getGameLeaders(game.id);
-            
+
             // Create game card
             const gameCard = createGameCard(game, team1, team2, leaders);
             gamesContainer.appendChild(gameCard);
         }
-        
+
     } catch (error) {
         console.error('Error loading games:', error);
         gamesContainer.innerHTML = '<div class="loading">Error loading games. Please check your connection and try refreshing the page.</div>';
@@ -178,11 +192,27 @@ async function updateSeasonInfo() {
     try {
         const settingsDoc = await db.collection('settings').doc('league').get();
         const settings = settingsDoc.data();
-        
+
         document.querySelector('.season-badge').textContent = `⛹️ SEASON ${settings.currentSeason}`;
-        document.querySelector('.week-info').textContent = `Currently Week ${settings.currentWeek}`;
+
+        // Find the latest week
+        const currentSeason = settings.currentSeason;
+        const allGamesSnapshot = await db.collection('games')
+            .where('season', '==', currentSeason)
+            .orderBy('week', 'desc')
+            .limit(1)
+            .get();
+
+        if (!allGamesSnapshot.empty) {
+            const latestGame = allGamesSnapshot.docs[0].data();
+            const latestWeek = latestGame.week;
+            document.querySelector('.week-info').textContent = `Latest Week ${latestWeek}`;
+        } else {
+            document.querySelector('.week-info').textContent = `No Games Yet`;
+        }
+
         document.querySelector('.league-name').textContent = settings.leagueName;
-        
+
     } catch (error) {
         console.error('Error updating season info:', error);
     }

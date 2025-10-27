@@ -251,7 +251,7 @@ function createGameCard(game, team1, team2, leaders) {
                 <span class="game-date">${formattedDate}</span>
                 <span style="color: #888; margin-left: 1rem;">Week ${game.week}</span>
             </div>
-            <button class="view-stats-btn" onclick="toggleGamePlayerStats('${game.id}', this)">View Player Stats</button>
+            <button class="view-stats-btn" onclick="toggleGamePlayerStats('${game.id}', this)">View Player Stats by Team</button>
         </div>
         <div class="matchup">
             <div class="team">
@@ -284,7 +284,7 @@ function createGameCard(game, team1, team2, leaders) {
             </div>
         </div>
         <div class="game-player-stats" id="game-stats-${game.id}">
-            <h5>Loading player statistics...</h5>
+            <h5>Loading player statistics by team...</h5>
         </div>
     `;
 
@@ -299,10 +299,10 @@ async function toggleGamePlayerStats(gameId, button) {
     if (statsContainer.classList.contains('show')) {
         // Hide stats
         statsContainer.classList.remove('show');
-        button.textContent = 'View Player Stats';
+        button.textContent = 'View Player Stats by Team';
     } else {
         // Show stats (load if not already loaded)
-        if (statsContainer.querySelector('h5').textContent === 'Loading player statistics...') {
+        if (statsContainer.querySelector('h5').textContent === 'Loading player statistics by team...') {
             await loadGamePlayerStats(gameId, statsContainer);
         }
         statsContainer.classList.add('show');
@@ -310,7 +310,7 @@ async function toggleGamePlayerStats(gameId, button) {
     }
 }
 
-// Load and display player stats for a specific game (showing top 3 categories per player)
+// Load and display player stats for a specific game (grouped by team)
 async function loadGamePlayerStats(gameId, container) {
     try {
         // Get all player stats for this game
@@ -323,27 +323,89 @@ async function loadGamePlayerStats(gameId, container) {
             return;
         }
 
-        let statsHtml = '<h5>Top Performances in This Game</h5>';
+        // Get game details to know the teams
+        const gameDoc = await db.collection('games').doc(gameId).get();
+        const game = gameDoc.data();
 
-        // For each player in this game, show their top 3 categories
+        // Get team information
+        const team1Doc = await db.collection('teams').doc(game.team1Id).get();
+        const team2Doc = await db.collection('teams').doc(game.team2Id).get();
+        const team1 = team1Doc.data();
+        const team2 = team2Doc.data();
+
+        // Group stats by team
+        const team1Stats = [];
+        const team2Stats = [];
+
+        // Process each stat and group by team
         for (const statDoc of gameStatsSnapshot.docs) {
             const gameStat = statDoc.data();
 
-            // Get player name
+            // Get player info including team
             const playerDoc = await db.collection('players').doc(gameStat.playerId).get();
-            const playerName = playerDoc.exists ? playerDoc.data().name : 'Unknown Player';
+            const player = playerDoc.data();
 
-            // Get top 3 performing categories for this game
-            const topCategories = getTopCategoriesForGame(gameStat);
+            const playerStat = {
+                id: statDoc.id,
+                playerId: gameStat.playerId,
+                playerName: player.name,
+                playerNumber: player.number,
+                ...gameStat
+            };
 
+            // Group by team
+            if (player.teamId === game.team1Id) {
+                team1Stats.push(playerStat);
+            } else if (player.teamId === game.team2Id) {
+                team2Stats.push(playerStat);
+            }
+        }
+
+        // Create HTML grouped by team
+        let statsHtml = '<h5>Game Statistics by Team</h5>';
+
+        // Team 1 section
+        if (team1Stats.length > 0) {
             statsHtml += `
-                <div class="player-stat-item">
-                    <span class="player-name">${playerName}</span>
-                    <div class="player-game-categories">
-                        ${topCategories.map(cat => `<div><strong>${cat.name}:</strong> ${cat.value}</div>`).join('')}
-                    </div>
-                </div>
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: ${team1.color}20; border-radius: 8px; border-left: 4px solid ${team1.color};">
+                    <h6 style="color: ${team1.color}; margin-bottom: 1rem; font-size: 1.1rem;">${team1.name} Players</h6>
             `;
+
+            team1Stats.forEach(stat => {
+                const topCategories = getTopCategoriesForGame(stat);
+                statsHtml += `
+                    <div class="player-stat-item" style="margin-bottom: 0.5rem;">
+                        <span class="player-name">${stat.playerName} (#${stat.playerNumber})</span>
+                        <div class="player-game-categories">
+                            ${topCategories.map(cat => `<div><strong>${cat.name}:</strong> ${cat.value}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            statsHtml += `</div>`;
+        }
+
+        // Team 2 section
+        if (team2Stats.length > 0) {
+            statsHtml += `
+                <div style="margin-bottom: 1.5rem; padding: 1rem; background: ${team2.color}20; border-radius: 8px; border-left: 4px solid ${team2.color};">
+                    <h6 style="color: ${team2.color}; margin-bottom: 1rem; font-size: 1.1rem;">${team2.name} Players</h6>
+            `;
+
+            team2Stats.forEach(stat => {
+                const topCategories = getTopCategoriesForGame(stat);
+                statsHtml += `
+                    <div class="player-stat-item" style="margin-bottom: 0.5rem;">
+                        <span class="player-name">${stat.playerName} (#${stat.playerNumber})</span>
+                        <div class="player-game-categories">
+                            ${topCategories.map(cat => `<div><strong>${cat.name}:</strong> ${cat.value}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            statsHtml += `</div>`;
         }
 
         container.innerHTML = statsHtml;
