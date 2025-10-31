@@ -25,7 +25,7 @@ async function updateSeasonInfo() {
         const settings = settingsDoc.data();
 
         document.getElementById('seasonInfo').textContent =
-            `Season ${settings.currentSeason} • Current Week: ${settings.currentWeek}`;
+            `Season ${settings.currentSeason}`;
         document.querySelector('.league-name').textContent = settings.leagueName;
 
     } catch (error) {
@@ -70,9 +70,6 @@ async function loadAvailableWeeks() {
             const option = document.createElement('option');
             option.value = week;
             option.textContent = `Week ${week}`;
-            if (week === settings.currentWeek) {
-                option.textContent += ' (Current)';
-            }
             weekSelect.appendChild(option);
         });
 
