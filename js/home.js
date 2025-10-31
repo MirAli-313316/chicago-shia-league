@@ -2,9 +2,25 @@
 
 // Wait for DOM and Firebase to be ready
 document.addEventListener('DOMContentLoaded', async function() {
+    initHeroSlideshow();
     await loadLatestWeekGames();
     updateSeasonInfo();
 });
+
+const HERO_SLIDE_INTERVAL_MS = 6500;
+const HERO_IMAGE_PATHS = [
+    'slide-show/IMG_3325.jpg',
+    'slide-show/IMG_3586.jpg',
+    'slide-show/IMG_3706.jpg',
+    'slide-show/IMG_3722.jpg',
+    'slide-show/IMG_3902.jpg',
+    'slide-show/IMG_3919.jpg',
+    'slide-show/IMG_4158.jpg',
+    'slide-show/IMG_4250.jpg',
+    'slide-show/IMG_5122.jpg',
+    'slide-show/IMG_5155.JPG',
+    'slide-show/IMG_5455.jpg'
+];
 
 // Load latest week's games
 async function loadLatestWeekGames() {
@@ -132,6 +148,57 @@ function getTopPlayer(stats, statName) {
         playerName: topStat.playerName,
         value: topStat[statName]
     };
+}
+
+function initHeroSlideshow() {
+    const slider = document.getElementById('heroSlider');
+
+    if (!slider || HERO_IMAGE_PATHS.length === 0) {
+        return;
+    }
+
+    if (slider.dataset.initialized === 'true') {
+        return;
+    }
+
+    const fragment = document.createDocumentFragment();
+
+    HERO_IMAGE_PATHS.forEach((src, index) => {
+        const slide = document.createElement('div');
+        slide.className = 'hero-slide';
+
+        if (index === 0) {
+            slide.classList.add('active');
+        }
+
+        slide.style.backgroundImage = `url('${src}')`;
+        slide.setAttribute('role', 'presentation');
+        fragment.appendChild(slide);
+
+        const img = new Image();
+        img.src = src;
+    });
+
+    slider.appendChild(fragment);
+    slider.dataset.initialized = 'true';
+
+    const slides = slider.querySelectorAll('.hero-slide');
+
+    if (slides.length <= 1) {
+        slides.forEach(slide => slide.classList.add('active'));
+        return;
+    }
+
+    let currentIndex = 0;
+
+    setInterval(() => {
+        const nextIndex = (currentIndex + 1) % slides.length;
+
+        slides[currentIndex].classList.remove('active');
+        slides[nextIndex].classList.add('active');
+
+        currentIndex = nextIndex;
+    }, HERO_SLIDE_INTERVAL_MS);
 }
 
 // Create HTML for game card

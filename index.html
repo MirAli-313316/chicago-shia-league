@@ -201,26 +201,89 @@
 
         /* Hero Section */
         .hero {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: clamp(320px, 60vh, 560px);
+            overflow: hidden;
+            color: #fff;
+            background: #111;
+        }
+
+        .hero-slider {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .hero-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transform: scale(1.06);
+            transition: opacity 1.4s ease-in-out, transform 6s ease;
+            will-change: opacity, transform;
+        }
+
+        .hero-slide::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.65) 0%, rgba(0, 0, 0, 0.35) 100%);
+            opacity: 0;
+            transition: opacity 1.4s ease-in-out;
+            pointer-events: none;
+        }
+
+        .hero-slide.active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 1;
+        }
+
+        .hero-slide.active::after {
+            opacity: 1;
+        }
+
+        .hero-overlay {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
             text-align: center;
-            padding: 3rem 2rem;
-            background: linear-gradient(135deg, #FF6B35 0%, #ff8c61 100%);
+            padding: clamp(1.5rem, 3vw, 3rem);
+            width: min(90%, 720px);
         }
 
         .season-badge {
-            display: inline-block;
-            background: #000;
-            color: #FF6B35;
-            padding: 0.5rem 1.5rem;
-            border-radius: 50px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 1rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            padding: 0.65rem 2.25rem;
+            border-radius: 999px;
+            font-size: clamp(1rem, 1.1vw + 0.8rem, 1.6rem);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            box-shadow: none;
         }
 
         .week-info {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #000;
+            font-size: clamp(1.8rem, 2.4vw + 1.4rem, 3.2rem);
+            font-weight: 700;
+            line-height: 1.1;
+            color: rgba(255, 255, 255, 0.78);
+            text-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
         }
 
         /* Container */
@@ -433,6 +496,19 @@
                 max-width: 100%;
                 padding: 1rem;
             }
+
+            .hero {
+                min-height: clamp(280px, 55vh, 420px);
+            }
+
+            .hero-overlay {
+                gap: 1rem;
+                padding: clamp(1.25rem, 4vw, 2rem);
+            }
+
+            .season-badge {
+                padding: 0.6rem 1.75rem;
+            }
         }
     </style>
 </head>
@@ -475,8 +551,11 @@
 
     <!-- Hero Section -->
     <div class="hero">
-        <div class="season-badge">⛹️ SEASON 3</div>
-        <div class="week-info">Latest Games</div>
+        <div class="hero-slider" id="heroSlider" aria-hidden="true"></div>
+        <div class="hero-overlay">
+            <div class="season-badge">⛹️ SEASON 3</div>
+            <div class="week-info">Latest Games</div>
+        </div>
     </div>
 
     <!-- Main Content -->
