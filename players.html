@@ -292,6 +292,16 @@
             background: rgba(255, 107, 53, 0.15);
         }
 
+        .team-average-row td {
+            font-weight: 600;
+            background: rgba(255, 107, 53, 0.12);
+        }
+
+        .team-average-row td:first-child {
+            color: #FF6B35;
+            text-align: left;
+        }
+
         .player-name {
             font-weight: bold;
             color: #FF6B35;
@@ -575,33 +585,12 @@
                     } catch (playerError) {
                         console.error(`Error loading stats for player ${player.name}:`, playerError);
                         // Continue with next player instead of failing completely
+                        const emptyStats = createEmptyPlayerStats();
                         playerStats.push({
                             id: player.id,
                             name: player.name,
                             number: player.number,
-                            games: 0,
-                            points: 0,
-                            rebounds: 0,
-                            assists: 0,
-                            steals: 0,
-                            blocks: 0,
-                            fgMade: 0,
-                            fgAtt: 0,
-                            twoMade: 0,
-                            twoAtt: 0,
-                            threeMade: 0,
-                            threeAtt: 0,
-                            ftMade: 0,
-                            ftAtt: 0,
-                            fgPct: '0.0',
-                            twoPct: '0.0',
-                            threePct: '0.0',
-                            ftPct: '0.0',
-                            avgPoints: '0.0',
-                            avgRebounds: '0.0',
-                            avgAssists: '0.0',
-                            avgSteals: '0.0',
-                            avgBlocks: '0.0'
+                            ...emptyStats
                         });
                     }
                 }
@@ -652,36 +641,136 @@
                 totals.ftAtt += stat.ftAtt || 0;
             });
             
-            // Calculate percentages
-            const fgPct = totals.fgAtt > 0 ? (totals.fgMade / totals.fgAtt * 100).toFixed(1) : '0.0';
-            const twoPct = totals.twoAtt > 0 ? (totals.twoMade / totals.twoAtt * 100).toFixed(1) : '0.0';
-            const threePct = totals.threeAtt > 0 ? (totals.threeMade / totals.threeAtt * 100).toFixed(1) : '0.0';
-            const ftPct = totals.ftAtt > 0 ? (totals.ftMade / totals.ftAtt * 100).toFixed(1) : '0.0';
-            
-            // Calculate averages
-            const avgPoints = totals.games > 0 ? (totals.points / totals.games).toFixed(1) : '0.0';
-            const avgRebounds = totals.games > 0 ? (totals.rebounds / totals.games).toFixed(1) : '0.0';
-            const avgAssists = totals.games > 0 ? (totals.assists / totals.games).toFixed(1) : '0.0';
-            const avgSteals = totals.games > 0 ? (totals.steals / totals.games).toFixed(1) : '0.0';
-            const avgBlocks = totals.games > 0 ? (totals.blocks / totals.games).toFixed(1) : '0.0';
+            const round = (value) => Number(value.toFixed(1));
+            const perGame = (value) => totals.games > 0 ? value / totals.games : 0;
+            const perGameRounded = (value) => round(perGame(value));
+
+            const fgPct = totals.fgAtt > 0 ? round((totals.fgMade / totals.fgAtt) * 100) : 0;
+            const twoPct = totals.twoAtt > 0 ? round((totals.twoMade / totals.twoAtt) * 100) : 0;
+            const threePct = totals.threeAtt > 0 ? round((totals.threeMade / totals.threeAtt) * 100) : 0;
+            const ftPct = totals.ftAtt > 0 ? round((totals.ftMade / totals.ftAtt) * 100) : 0;
             
             return {
-                ...totals,
+                games: totals.games,
+                fgMade: perGameRounded(totals.fgMade),
+                fgAtt: perGameRounded(totals.fgAtt),
+                twoMade: perGameRounded(totals.twoMade),
+                twoAtt: perGameRounded(totals.twoAtt),
+                threeMade: perGameRounded(totals.threeMade),
+                threeAtt: perGameRounded(totals.threeAtt),
+                ftMade: perGameRounded(totals.ftMade),
+                ftAtt: perGameRounded(totals.ftAtt),
                 fgPct,
                 twoPct,
                 threePct,
                 ftPct,
-                avgPoints,
-                avgRebounds,
-                avgAssists,
-                avgSteals,
-                avgBlocks
+                avgPoints: perGameRounded(totals.points),
+                avgRebounds: perGameRounded(totals.rebounds),
+                avgAssists: perGameRounded(totals.assists),
+                avgSteals: perGameRounded(totals.steals),
+                avgBlocks: perGameRounded(totals.blocks),
+                totals: {
+                    games: totals.games,
+                    points: totals.points,
+                    rebounds: totals.rebounds,
+                    assists: totals.assists,
+                    steals: totals.steals,
+                    blocks: totals.blocks,
+                    fgMade: totals.fgMade,
+                    fgAtt: totals.fgAtt,
+                    twoMade: totals.twoMade,
+                    twoAtt: totals.twoAtt,
+                    threeMade: totals.threeMade,
+                    threeAtt: totals.threeAtt,
+                    ftMade: totals.ftMade,
+                    ftAtt: totals.ftAtt
+                }
+            };
+        }
+
+        function createEmptyPlayerStats() {
+            return {
+                games: 0,
+                fgMade: 0,
+                fgAtt: 0,
+                twoMade: 0,
+                twoAtt: 0,
+                threeMade: 0,
+                threeAtt: 0,
+                ftMade: 0,
+                ftAtt: 0,
+                fgPct: 0,
+                twoPct: 0,
+                threePct: 0,
+                ftPct: 0,
+                avgPoints: 0,
+                avgRebounds: 0,
+                avgAssists: 0,
+                avgSteals: 0,
+                avgBlocks: 0,
+                totals: {
+                    games: 0,
+                    points: 0,
+                    rebounds: 0,
+                    assists: 0,
+                    steals: 0,
+                    blocks: 0,
+                    fgMade: 0,
+                    fgAtt: 0,
+                    twoMade: 0,
+                    twoAtt: 0,
+                    threeMade: 0,
+                    threeAtt: 0,
+                    ftMade: 0,
+                    ftAtt: 0
+                }
             };
         }
 
         // Display stats in table format
         function displayStatsTable(teamName, playerStats) {
             const statsContainer = document.getElementById('statsContainer');
+            const formatAverage = (value) => Number(value ?? 0).toFixed(1);
+            const formatPercentage = (value) => `${Number(value ?? 0).toFixed(1)}%`;
+            const teamTotals = playerStats.reduce((acc, player) => {
+                const totals = player.totals || {};
+                acc.games = Math.max(acc.games, player.games || 0);
+                acc.fgMade += totals.fgMade || 0;
+                acc.fgAtt += totals.fgAtt || 0;
+                acc.twoMade += totals.twoMade || 0;
+                acc.twoAtt += totals.twoAtt || 0;
+                acc.threeMade += totals.threeMade || 0;
+                acc.threeAtt += totals.threeAtt || 0;
+                acc.ftMade += totals.ftMade || 0;
+                acc.ftAtt += totals.ftAtt || 0;
+                acc.rebounds += totals.rebounds || 0;
+                acc.assists += totals.assists || 0;
+                acc.steals += totals.steals || 0;
+                acc.blocks += totals.blocks || 0;
+                acc.points += totals.points || 0;
+                return acc;
+            }, {
+                games: 0,
+                fgMade: 0,
+                fgAtt: 0,
+                twoMade: 0,
+                twoAtt: 0,
+                threeMade: 0,
+                threeAtt: 0,
+                ftMade: 0,
+                ftAtt: 0,
+                rebounds: 0,
+                assists: 0,
+                steals: 0,
+                blocks: 0,
+                points: 0
+            });
+            const teamGames = teamTotals.games;
+            const divideTeam = (value) => teamGames > 0 ? value / teamGames : 0;
+            const teamFgPct = teamTotals.fgAtt > 0 ? (teamTotals.fgMade / teamTotals.fgAtt) * 100 : 0;
+            const teamTwoPct = teamTotals.twoAtt > 0 ? (teamTotals.twoMade / teamTotals.twoAtt) * 100 : 0;
+            const teamThreePct = teamTotals.threeAtt > 0 ? (teamTotals.threeMade / teamTotals.threeAtt) * 100 : 0;
+            const teamFtPct = teamTotals.ftAtt > 0 ? (teamTotals.ftMade / teamTotals.ftAtt) * 100 : 0;
             
             let tableHTML = `
                 <h2 class="team-name-header">${teamName}</h2>
@@ -691,22 +780,22 @@
                             <th>Player</th>
                             <th>#</th>
                             <th>GP</th>
-                            <th>FGM</th>
-                            <th>FGA</th>
+                            <th>FGM/G</th>
+                            <th>FGA/G</th>
                             <th>FG%</th>
-                            <th>2PM</th>
-                            <th>2PA</th>
+                            <th>2PM/G</th>
+                            <th>2PA/G</th>
                             <th>2P%</th>
-                            <th>3PM</th>
-                            <th>3PA</th>
+                            <th>3PM/G</th>
+                            <th>3PA/G</th>
                             <th>3P%</th>
-                            <th>FTM</th>
-                            <th>FTA</th>
+                            <th>FTM/G</th>
+                            <th>FTA/G</th>
                             <th>FT%</th>
-                            <th>REB</th>
-                            <th>AST</th>
-                            <th>STL</th>
-                            <th>BLK</th>
+                            <th>REB/G</th>
+                            <th>AST/G</th>
+                            <th>STL/G</th>
+                            <th>BLK/G</th>
                             <th>PPG</th>
                         </tr>
                     </thead>
@@ -719,26 +808,26 @@
                         <td class="player-name" onclick="togglePlayerGameStats('${player.id || player.name}')">${player.name}</td>
                         <td>${player.number}</td>
                         <td>${player.games}</td>
-                        <td>${player.fgMade}</td>
-                        <td>${player.fgAtt}</td>
-                        <td class="percentage">${player.fgPct}%</td>
-                        <td>${player.twoMade}</td>
-                        <td>${player.twoAtt}</td>
-                        <td class="percentage">${player.twoPct}%</td>
-                        <td>${player.threeMade}</td>
-                        <td>${player.threeAtt}</td>
-                        <td class="percentage">${player.threePct}%</td>
-                        <td>${player.ftMade}</td>
-                        <td>${player.ftAtt}</td>
-                        <td class="percentage">${player.ftPct}%</td>
-                        <td>${player.avgRebounds}</td>
-                        <td>${player.avgAssists}</td>
-                        <td>${player.avgSteals}</td>
-                        <td>${player.avgBlocks}</td>
-                        <td><strong>${player.avgPoints}</strong></td>
+                        <td>${formatAverage(player.fgMade)}</td>
+                        <td>${formatAverage(player.fgAtt)}</td>
+                        <td class="percentage">${formatPercentage(player.fgPct)}</td>
+                        <td>${formatAverage(player.twoMade)}</td>
+                        <td>${formatAverage(player.twoAtt)}</td>
+                        <td class="percentage">${formatPercentage(player.twoPct)}</td>
+                        <td>${formatAverage(player.threeMade)}</td>
+                        <td>${formatAverage(player.threeAtt)}</td>
+                        <td class="percentage">${formatPercentage(player.threePct)}</td>
+                        <td>${formatAverage(player.ftMade)}</td>
+                        <td>${formatAverage(player.ftAtt)}</td>
+                        <td class="percentage">${formatPercentage(player.ftPct)}</td>
+                        <td>${formatAverage(player.avgRebounds)}</td>
+                        <td>${formatAverage(player.avgAssists)}</td>
+                        <td>${formatAverage(player.avgSteals)}</td>
+                        <td>${formatAverage(player.avgBlocks)}</td>
+                        <td><strong>${formatAverage(player.avgPoints)}</strong></td>
                     </tr>
                     <tr class="player-game-stats-row" id="player-stats-${player.id || player.name}">
-                        <td colspan="21">
+                        <td colspan="20">
                             <div class="player-game-stats" id="player-game-stats-${player.id || player.name}">
                                 <h4>Loading game statistics...</h4>
                             </div>
@@ -746,6 +835,31 @@
                     </tr>
                 `;
             });
+
+            tableHTML += `
+                    <tr class="team-average-row">
+                        <td>Team Average</td>
+                        <td>—</td>
+                        <td>${teamGames}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.fgMade))}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.fgAtt))}</td>
+                        <td class="percentage">${formatPercentage(teamFgPct)}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.twoMade))}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.twoAtt))}</td>
+                        <td class="percentage">${formatPercentage(teamTwoPct)}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.threeMade))}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.threeAtt))}</td>
+                        <td class="percentage">${formatPercentage(teamThreePct)}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.ftMade))}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.ftAtt))}</td>
+                        <td class="percentage">${formatPercentage(teamFtPct)}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.rebounds))}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.assists))}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.steals))}</td>
+                        <td>${formatAverage(divideTeam(teamTotals.blocks))}</td>
+                        <td><strong>${formatAverage(divideTeam(teamTotals.points))}</strong></td>
+                    </tr>
+            `;
             
             tableHTML += `
                     </tbody>
