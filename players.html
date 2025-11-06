@@ -251,6 +251,8 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 107, 53, 0.3);
             overflow-x: auto;
+            overflow-y: auto;
+            max-height: 72vh;
         }
 
         .team-name-header {
@@ -267,7 +269,7 @@
         }
 
         .stats-table th {
-            background: rgba(255, 107, 53, 0.3);
+            background: rgba(15, 15, 15, 0.97);
             padding: 1rem;
             text-align: center;
             font-weight: bold;
@@ -276,6 +278,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
         }
 
         .stats-table td {
@@ -403,8 +406,6 @@
 
             .stats-container {
                 padding: 1rem;
-                max-height: 70vh;
-                overflow-y: auto;
             }
 
             .team-tabs {
