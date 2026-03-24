@@ -129,6 +129,7 @@ chicago-shia-league/
   - **Add Player:** Add new players to teams
   - **Add Team:** Add new teams
 - Only authenticated users can write data
+- **Manage Existing Data** game and player-stats selectors use `settings.league.currentSeason` only; optional “Delete non-current season & orphaned stats” removes prior-season games (and their box scores) plus `gameStats` whose game or player document is missing
 - **ISSUE:** Player stats form disappears when switching tabs
 
 #### 3. Player Stats Page (players.html)

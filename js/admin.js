@@ -2,6 +2,19 @@
 
 let currentGameId = null;
 
+async function getLeagueCurrentSeason() {
+    const settingsDoc = await db.collection('settings').doc('league').get();
+    const settings = settingsDoc.data() || {};
+    return settings.currentSeason;
+}
+
+async function deleteDocumentsInChunks(docSnaps, chunkSize = 400) {
+    for (let i = 0; i < docSnaps.length; i += chunkSize) {
+        const chunk = docSnaps.slice(i, i + chunkSize);
+        await Promise.all(chunk.map(d => d.ref.delete()));
+    }
+}
+
 // Check authentication status on page load
 firebase.auth().onAuthStateChanged(user => {
     const loginSection = document.getElementById('loginSection');
@@ -528,16 +541,31 @@ function showManagementError(message) {
     container.appendChild(errorDiv);
 }
 
-// Load games for management dropdown
+// Load games for management dropdown (current season only — matches public site)
 async function loadGamesForManagement() {
     try {
         console.log('Loading games for management...');
+        const currentSeason = await getLeagueCurrentSeason();
+        if (currentSeason === undefined || currentSeason === null) {
+            const gamesList = document.getElementById('gamesList');
+            if (gamesList) {
+                gamesList.innerHTML = '<option value="">Select a game...</option>';
+                gamesList.innerHTML += '<option value="" disabled>Set current season in League Settings first</option>';
+            }
+            return;
+        }
         const gamesSnapshot = await db.collection('games')
-            .orderBy('date', 'desc')
+            .where('season', '==', currentSeason)
             .get();
 
-        console.log('Games snapshot size:', gamesSnapshot.size);
-        console.log('Games snapshot empty:', gamesSnapshot.empty);
+        const sortedDocs = gamesSnapshot.docs.slice().sort((a, b) => {
+            const da = a.data().date;
+            const db = b.data().date;
+            if (!da || !db) return 0;
+            return db.toMillis() - da.toMillis();
+        });
+
+        console.log('Games snapshot size:', sortedDocs.length);
 
         const gamesList = document.getElementById('gamesList');
         if (!gamesList) {
@@ -547,14 +575,14 @@ async function loadGamesForManagement() {
 
         gamesList.innerHTML = '<option value="">Select a game...</option>';
 
-        if (gamesSnapshot.empty) {
-            console.log('No games found in database');
-            gamesList.innerHTML += '<option value="" disabled>No games found - create some games first</option>';
+        if (sortedDocs.length === 0) {
+            console.log('No games found for current season');
+            gamesList.innerHTML += '<option value="" disabled>No games in the current season yet</option>';
             return;
         }
 
-        console.log('Processing', gamesSnapshot.docs.length, 'games');
-        for (const doc of gamesSnapshot.docs) {
+        console.log('Processing', sortedDocs.length, 'games');
+        for (const doc of sortedDocs) {
             const game = doc.data();
             console.log('Processing game:', game);
 
@@ -589,18 +617,11 @@ async function loadGamesForManagement() {
     }
 }
 
-// Load player stats for management dropdown
+// Load player stats for management dropdown (current season games only)
 async function loadPlayerStatsForManagement() {
     try {
         console.log('Loading player stats for management...');
-        const statsSnapshot = await db.collection('gameStats')
-            .orderBy('createdAt', 'desc')
-            .limit(100)
-            .get();
-
-        console.log('Stats snapshot size:', statsSnapshot.size);
-        console.log('Stats snapshot empty:', statsSnapshot.empty);
-
+        const currentSeason = await getLeagueCurrentSeason();
         const statsList = document.getElementById('playerStatsList');
         if (!statsList) {
             console.error('playerStatsList element not found!');
@@ -609,22 +630,50 @@ async function loadPlayerStatsForManagement() {
 
         statsList.innerHTML = '<option value="">Select player stats...</option>';
 
-        if (statsSnapshot.empty) {
-            console.log('No player stats found in database');
-            statsList.innerHTML += '<option value="" disabled>No player stats found - add some game stats first</option>';
+        if (currentSeason === undefined || currentSeason === null) {
+            statsList.innerHTML += '<option value="" disabled>Set current season in League Settings first</option>';
             return;
         }
 
-        console.log('Processing', statsSnapshot.docs.length, 'player stats');
-        for (const doc of statsSnapshot.docs) {
-            const stat = doc.data();
-            console.log('Processing stat:', stat);
+        const gamesSnapshot = await db.collection('games')
+            .where('season', '==', currentSeason)
+            .get();
 
-            // Get player name
+        const gameIds = gamesSnapshot.docs.map(d => d.id);
+        if (gameIds.length === 0) {
+            statsList.innerHTML += '<option value="" disabled>No games in the current season yet</option>';
+            return;
+        }
+
+        const allStatDocs = [];
+        for (let i = 0; i < gameIds.length; i += 10) {
+            const chunk = gameIds.slice(i, i + 10);
+            const statsSnapshot = await db.collection('gameStats')
+                .where('gameId', 'in', chunk)
+                .get();
+            statsSnapshot.docs.forEach(d => allStatDocs.push(d));
+        }
+
+        allStatDocs.sort((a, b) => {
+            const ca = a.data().createdAt;
+            const cb = b.data().createdAt;
+            const ta = (ca && typeof ca.toMillis === 'function') ? ca.toMillis() : 0;
+            const tb = (cb && typeof cb.toMillis === 'function') ? cb.toMillis() : 0;
+            return tb - ta;
+        });
+
+        if (allStatDocs.length === 0) {
+            statsList.innerHTML += '<option value="" disabled>No player stats for current season games yet</option>';
+            return;
+        }
+
+        console.log('Processing', allStatDocs.length, 'player stats (current season)');
+        for (const doc of allStatDocs) {
+            const stat = doc.data();
+
             const playerDoc = await db.collection('players').doc(stat.playerId).get();
             const playerName = playerDoc.exists ? playerDoc.data().name : 'Unknown Player';
 
-            // Get game info
             const gameDoc = await db.collection('games').doc(stat.gameId).get();
             let gameInfo = 'Unknown Game';
             if (gameDoc.exists) {
@@ -648,6 +697,85 @@ async function loadPlayerStatsForManagement() {
         const statsList = document.getElementById('playerStatsList');
         if (statsList) {
             statsList.innerHTML = '<option value="">Error loading player stats</option>';
+        }
+    }
+}
+
+/**
+ * Delete prior-season games (and their box scores), stats pointing at missing games,
+ * and stats pointing at deleted players. Use after rolling currentSeason forward.
+ */
+async function runLeagueDataCleanup() {
+    const currentSeason = await getLeagueCurrentSeason();
+    if (currentSeason === undefined || currentSeason === null) {
+        alert('Set the current season under League Settings before running cleanup.');
+        return;
+    }
+    const msg =
+        `This cannot be undone.\n\n` +
+        `Current season: ${currentSeason}\n\n` +
+        `This will delete:\n` +
+        `• All games (and box scores) where season ≠ ${currentSeason}\n` +
+        `• Any box score row whose game no longer exists\n` +
+        `• Any box score row whose player no longer exists\n\n` +
+        `Continue?`;
+    if (!confirm(msg)) {
+        return;
+    }
+
+    const manageTab = document.getElementById('manageDataTab');
+    const successMessage = document.getElementById('manageDataSuccessMessage');
+
+    try {
+        if (manageTab) {
+            manageTab.style.opacity = '0.6';
+            manageTab.style.pointerEvents = 'none';
+        }
+
+        const gamesSnap = await db.collection('games').get();
+        const toRemoveGameDocs = gamesSnap.docs.filter(d => d.data().season !== currentSeason);
+
+        for (const gameDoc of toRemoveGameDocs) {
+            const statsSnap = await db.collection('gameStats')
+                .where('gameId', '==', gameDoc.id)
+                .get();
+            await deleteDocumentsInChunks(statsSnap.docs, 400);
+            await gameDoc.ref.delete();
+        }
+
+        const validGameIds = new Set((await db.collection('games').get()).docs.map(d => d.id));
+        let statsSnap = await db.collection('gameStats').get();
+        const orphanGameStats = statsSnap.docs.filter(d => {
+            const gid = d.data().gameId;
+            return !gid || !validGameIds.has(gid);
+        });
+        await deleteDocumentsInChunks(orphanGameStats, 400);
+
+        const validPlayerIds = new Set((await db.collection('players').get()).docs.map(d => d.id));
+        statsSnap = await db.collection('gameStats').get();
+        const orphanPlayerStats = statsSnap.docs.filter(d => {
+            const pid = d.data().playerId;
+            return !pid || !validPlayerIds.has(pid);
+        });
+        await deleteDocumentsInChunks(orphanPlayerStats, 400);
+
+        cancelGameEdit();
+        cancelPlayerStatsEdit();
+
+        await loadManagementData();
+
+        if (successMessage) {
+            successMessage.textContent = 'Old season and orphaned stats were removed. Dropdowns show the current season only.';
+            successMessage.classList.remove('hidden');
+            setTimeout(() => successMessage.classList.add('hidden'), 5000);
+        }
+    } catch (error) {
+        console.error('Error during league data cleanup:', error);
+        alert('Cleanup failed: ' + error.message);
+    } finally {
+        if (manageTab) {
+            manageTab.style.opacity = '';
+            manageTab.style.pointerEvents = '';
         }
     }
 }

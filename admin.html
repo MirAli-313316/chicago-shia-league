@@ -858,10 +858,16 @@
 
                 <div style="background: rgba(255, 107, 53, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #FF6B35;">
                     <p><strong>How to use:</strong></p>
-                    <p>1. Use the dropdown menus below to select items to edit or delete</p>
-                    <p>2. If dropdowns show "No items found", you need to create some data first using the other tabs</p>
-                    <p>3. Edit forms will appear when you select an item</p>
-                    <p>4. Be careful with deletions - they cannot be undone!</p>
+                    <p>1. Game and player-stats dropdowns only list the <strong>current season</strong> (from League Settings)</p>
+                    <p>2. If dropdowns show "No items found", create data using the other tabs or run cleanup if you expect an empty new season</p>
+                    <p>3. Edit forms appear when you select an item</p>
+                    <p>4. Individual deletions cannot be undone</p>
+                </div>
+
+                <div style="background: rgba(220, 53, 69, 0.08); padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #dc3545;">
+                    <p><strong>Remove old season data from the database</strong></p>
+                    <p style="color: #555; margin-bottom: 0.75rem;">Deletes every other season's games and box scores, plus orphaned rows (missing game or player). Use when you no longer need prior seasons — not reversible.</p>
+                    <button type="button" class="btn" style="background: #dc3545; border-color: #dc3545;" onclick="runLeagueDataCleanup()">Delete non-current season &amp; orphaned stats</button>
                 </div>
 
                 <!-- Games Management Section -->

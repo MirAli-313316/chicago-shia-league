@@ -409,6 +409,13 @@ Before going live:
 
 **Fix:** In `players.html`, load the set of `games` document IDs for the active `currentSeason`, cache it per season, and filter each player’s `gameStats` so only rows whose `gameId` is in that set are aggregated and listed. Game-by-game ordering uses client-side sort by `createdAt` after filtering (no composite index required).
 
+### Manage Existing Data: current season only + optional DB cleanup
+**Date:** 2025-03
+
+**Problem:** Admin “Manage Existing Data” games and player-stats dropdowns listed all seasons, including removed teams (“Unknown”) and stale rows after deleting teams/players.
+
+**Fix:** `loadGamesForManagement` / `loadPlayerStatsForManagement` in `js/admin.js` scope to `settings.league.currentSeason` (player stats loaded via chunked `gameId in` queries). Added `runLeagueDataCleanup()` with a red warning button in `admin.html` to permanently delete games where `season ≠ currentSeason` (and their `gameStats`), then remove orphaned `gameStats` (missing game or player).
+
 ---
 
 ## 📊 Analytics to Track
