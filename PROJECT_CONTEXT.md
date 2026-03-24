@@ -137,6 +137,7 @@ chicago-shia-league/
 - Season averages calculated automatically
 - Sortable columns
 - Mobile responsive with horizontal scroll
+- Totals and game-by-game lines only include `gameStats` whose `gameId` belongs to a game in `settings.league.currentSeason` (same season as Games / Home)
 
 ### Current Pages
 - **games.html** - Games by week page with week selector and game history

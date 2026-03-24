@@ -400,6 +400,17 @@ Before going live:
 
 ---
 
+## Resolved (changelog)
+
+### Player stats scoped to current season
+**Date:** 2025-03
+
+**Problem:** After updating `settings.league.currentSeason` in the admin portal, games lists correctly hid the previous season, but the Player Stats page still showed last season’s season totals and game-by-game rows.
+
+**Fix:** In `players.html`, load the set of `games` document IDs for the active `currentSeason`, cache it per season, and filter each player’s `gameStats` so only rows whose `gameId` is in that set are aggregated and listed. Game-by-game ordering uses client-side sort by `createdAt` after filtering (no composite index required).
+
+---
+
 ## 📊 Analytics to Track
 
 - Page views per page
