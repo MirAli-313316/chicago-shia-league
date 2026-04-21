@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Season Leaders - Chicago Shia League</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+        nav {
+            background: #000;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo-section { display: flex; align-items: center; gap: 1rem; }
+        .logo {
+            width: 50px;
+            height: 50px;
+            background-image: url('images/league-logo.jpeg');
+            background-size: cover;
+            background-position: center;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .logo:hover { transform: scale(1.05); }
+        .league-name { font-size: 1.5rem; font-weight: bold; color: #FF6B35; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover { background: #FF6B35; }
+        .nav-links a.active { background: #FF6B35; }
+        .mobile-nav { display: none; }
+        @media (max-width: 768px) {
+            nav { display: none !important; }
+            .mobile-nav {
+                display: block;
+                background: #000;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            }
+            .mobile-nav-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem;
+                max-width: 100%;
+            }
+            .mobile-logo-section { display: flex; align-items: center; gap: 1rem; }
+            .mobile-logo {
+                width: 40px;
+                height: 40px;
+                background-image: url('images/league-logo.jpeg');
+                background-size: cover;
+                background-position: center;
+                border-radius: 50%;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            .mobile-logo:hover { transform: scale(1.05); }
+            .mobile-league-name { font-size: 1.2rem; font-weight: bold; color: #FF6B35; }
+            .mobile-menu-toggle {
+                background: #FF6B35;
+                border: none;
+                color: #fff;
+                font-size: 1.5rem;
+                padding: 0.5rem;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+            .mobile-menu-toggle:hover { background: #ff8c61; }
+            .mobile-nav-links {
+                display: none;
+                background: #000;
+                border-top: 1px solid rgba(255, 107, 53, 0.3);
+                padding: 1rem;
+            }
+            .mobile-nav-links.active { display: block; }
+            .mobile-nav-links ul { list-style: none; margin: 0; padding: 0; }
+            .mobile-nav-links li { margin-bottom: 0.5rem; }
+            .mobile-nav-links a {
+                color: #fff;
+                text-decoration: none;
+                padding: 0.75rem 1rem;
+                display: block;
+                border-radius: 5px;
+                transition: all 0.3s;
+            }
+            .mobile-nav-links a:hover { background: #FF6B35; }
+            .mobile-nav-links a.active { background: #FF6B35; }
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #FF6B35;
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: #FF6B35;
+            margin-bottom: 0.5rem;
+        }
+        .season-info { color: #888; font-size: 1.1rem; }
+        .leaders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .leader-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 1.25rem;
+            border: 1px solid rgba(255, 107, 53, 0.3);
+            backdrop-filter: blur(10px);
+        }
+        .leader-card h2 {
+            color: #FF6B35;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+        .leader-list { list-style: none; display: grid; gap: 0.75rem; }
+        .leader-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: center;
+        }
+        .leader-rank {
+            color: #FF6B35;
+            font-weight: 700;
+            min-width: 24px;
+        }
+        .leader-main { flex: 1; }
+        .leader-name { font-weight: 600; }
+        .leader-team { color: #bbb; font-size: 0.9rem; }
+        .leader-value { font-weight: 700; color: #6bff6b; }
+        .loading, .error, .empty {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+        }
+        .error { color: #ff6b6b; }
+        @media (max-width: 768px) {
+            body { overflow-x: hidden; }
+            .container { max-width: 100%; padding: 1rem; }
+            .page-header h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <div class="logo-section">
+                <div class="logo" onclick="goHome()"></div>
+                <div class="league-name">Chicago Shia League</div>
+                <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="games.html">Games by Week</a></li>
+                <li><a href="players.html">Player Stats</a></li>
+                <li><a href="leaders.html" class="active">Leaders</a></li>
+                <li><a href="admin.html">Admin 🔒</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="mobile-nav">
+        <div class="mobile-nav-container">
+            <div class="mobile-logo-section">
+                <div class="mobile-logo" onclick="mobileGoHome()"></div>
+                <div class="mobile-league-name">Chicago Shia League</div>
+            </div>
+            <button class="mobile-menu-toggle" onclick="mobileToggleMenu()">☰</button>
+        </div>
+        <div class="mobile-nav-links" id="mobileNavLinks">
+            <ul>
+                <li><a href="index.html" class="mobile-nav-link">Home</a></li>
+                <li><a href="games.html" class="mobile-nav-link">Games by Week</a></li>
+                <li><a href="players.html" class="mobile-nav-link">Player Stats</a></li>
+                <li><a href="leaders.html" class="mobile-nav-link active">Leaders</a></li>
+                <li><a href="admin.html" class="mobile-nav-link">Admin 🔒</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>🏆 Season Leaders</h1>
+            <p class="season-info" id="seasonInfo">Loading season...</p>
+        </div>
+        <div id="leadersContainer" class="leaders-grid">
+            <div class="loading">Loading season leaders...</div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/leaders.js"></script>
+    <script>
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            if (navLinks) navLinks.classList.toggle('active');
+        }
+        function goHome() { window.location.href = 'index.html'; }
+        function mobileToggleMenu() {
+            const mobileNavLinks = document.getElementById('mobileNavLinks');
+            if (mobileNavLinks) mobileNavLinks.classList.toggle('active');
+        }
+        function mobileGoHome() { window.location.href = 'index.html'; }
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+            mobileNavLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === currentPath.substring(currentPath.lastIndexOf('/'))) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
